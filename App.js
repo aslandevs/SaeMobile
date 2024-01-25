@@ -3,7 +3,7 @@ import {View} from "react-native";
 import Routes from "./routes";
 const App = () =>{
     return(
-        <View>
+        <View style={{flex: 1}}>
             <Routes />
         </View>
     );
