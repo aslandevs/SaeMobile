@@ -1,18 +1,25 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import profilScreen from './qrCodeScreen';
 import { Button } from 'react-native';
 
 const HomeScreen = ({navigation}) => {
     return (
-      <Button
-        title="Go to Jane's profile"
-        onPress={() =>
-          navigation.navigate('Profile', {name: 'Jane'})
-        }
-      />
+      <View>
+        {/* <Text style={styles.text}>Bienvenue sur ScanMyMeds !</Text> */}
+
+      </View>
     );
   };
 
+  const styles = StyleSheet.create({
+    text: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: 'black',
+      marginTop: 25,
+      textAlign: 'center',
+    },
+  });
 
 export default HomeScreen;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Camera,FlashMode } from 'expo-camera';
-import { View, Image, Button, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
+import { BarCodeScanner, BarCodeScannerConstants  } from 'expo-barcode-scanner';
 import { Alert } from 'react-native';
 
 const QrCodeScreen = () => {
@@ -9,6 +10,10 @@ const QrCodeScreen = () => {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [scannedData, setScannedData] = useState(null);
+  const [visible, setModalVisibility] = useState(false);
+
+  const showHelpModal = () => setModalVisibility(true);
+  const hideHelpModal = () => setModalVisibility(false);
 
 
   useEffect(() => {
@@ -22,13 +27,17 @@ const QrCodeScreen = () => {
     setIsCameraOpen(prevState => !prevState);
   };
 
+  function extraireCIP(value) {
+    return value.slice(3, 16);
+}
+
 
   const handleBarCodeScanned = ({ data }) => {
     if (data && data !== scannedData) {
       setScannedData(data);
       Alert.alert(
         'QR Code Scanned',
-        `Data: ${data}`,
+        `Data: ${data}\nCIP: ${extraireCIP(data)}`,
         [
           {
             text: 'OK',
@@ -40,38 +49,77 @@ const QrCodeScreen = () => {
     }
   };
 
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
+  if (hasPermission === null) { return <View />;}
+  if (hasPermission === false) {return <Text>No access to camera</Text>;}
 
   return (
-    <View style={styles.container}>
+    <Provider>
       {isCameraOpen && (
-                <Camera
-                      style={styles.camera}
-                      type={type}
-                      barCodeScannerProps={{
-                        barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-                      }}
-                      onBarCodeScanned={handleBarCodeScanned}
-                >
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={() => setType(
-              type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}>
-              <Text style={styles.text}>Flip Camera</Text>
-            </TouchableOpacity>
-          </View>
+        <Camera
+          style={styles.camera}
+          type={type}
+          barCodeScannerProps={{
+            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.datamatrix]}}
+          autoFocus={Camera.Constants.AutoFocus.on}
+          onBarCodeScanned={handleBarCodeScanned}
+        >
+
+            <View style={styles.buttonContainer}>
+              <Button 
+                mode="contained"
+                onPress={() => setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}
+              >
+                Tourner la caméra
+              </Button>
+            </View>
+
         </Camera>
       )}
-      <Image style={{ width: 150, height: 150 }} source={require('../assets/images/qr_code_exemple.png')} />
-      <Button
-        title={isCameraOpen ? "Ne plus Scanner le QR Code" : "Scanner le QR Code"}
-        onPress={toggleCamera}
-      />
-    </View>
+
+      <View
+        style={styles.container}
+      >
+        <Image style={{ width: 150, height: 150 }} source={require('../assets/images/qr_code_exemple.png')} />
+          <Button
+            mode="contained"
+            onPress={toggleCamera}
+          >
+            {isCameraOpen ? "Ne plus Scanner le QR Code" : "Scanner le QR Code"}
+          </Button>
+      </View>
+      <View  style={{alignItems:'center', marginBottom: 15}}>
+        <Button
+            mode="contained"
+            onPress={() => showHelpModal()}
+            style={styles.btnHelp}
+          >
+            Aide
+          </Button>
+      </View>
+        <Portal>
+          <Modal visible={visible} onDismiss={hideHelpModal}>
+            <View style={styles.modalView}>
+              <Image
+                source={require('../assets/images/helpqrcode/help_qrcode.png')}
+                style={{ width: 174, height: 232, resizeMode: 'cover'}}
+              ></Image>
+              <Text
+                style={{textAlign: 'justify', marginTop: 15, fontSize: 15}}
+              >
+                Scannez vos médicaments à l’aide de l’appareil photo pour obtenir le code CIP.
+              </Text>
+
+              <Button
+                mode="contained"
+                onPress={() => hideHelpModal()}
+                style={[styles.btnHelp, {marginBottom: -16,marginTop: 30}]}
+              >
+                Fermer
+              </Button>
+            </View>
+          </Modal>
+        </Portal>
+    </Provider>
   );
 };
 
@@ -90,22 +138,21 @@ const styles = StyleSheet.create({
     bottom: 20,
     alignSelf: 'center',
   },
-  button: {
-    backgroundColor: '#8EC641',
-    borderRadius: 50,
-    padding: 15,
-  },
-  buttonFlash: {
-    backgroundColor: '#8EC641',
-    position: 'absolute',
-    left: 180,
-    borderRadius: 50,
-    padding: 15,
-  },
-  text: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: 'white',
+  modalView: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    marginLeft: 35,
+    marginRight: 35,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
 

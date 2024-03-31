@@ -1,5 +1,3 @@
-// In App.js in a new project
-
 import * as React from 'react';
 import { Ionicons } from '@expo/vector-icons'; 
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './screens/homeScreen';
 import QrCodeScreen from './screens/qrCodeScreen';
 import SaisieCodeScreen from './screens/saisieCodeScreen';
+import aboutScreen from './screens/aboutScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
@@ -47,11 +46,10 @@ function App() {
         ),
       }} />
       <Tab.Screen 
-        name="Home" 
+        name="Accueil" 
         component={HomeScreen} 
         options={{
-          title: 'Welcome',
-          tabBarLabel: 'Home',
+          tabBarLabel: 'Accueil',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
               name={'home'} 
@@ -62,11 +60,10 @@ function App() {
         }}
       />
       <Tab.Screen 
-        name="Soon" 
+        name="Mes signalements" 
         component={QrCodeScreen}
         options={{
-          title: 'Soon',
-          tabBarLabel: 'Soon',
+          tabBarLabel: 'Signalements',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
               name={'help'} 
@@ -77,11 +74,10 @@ function App() {
         }} 
       />
       <Tab.Screen 
-        name="Settings" 
-        component={SaisieCodeScreen}
+        name="À propos" 
+        component={aboutScreen}
         options={{
-          title: 'Aide',
-          tabBarLabel: 'Aide',
+          tabBarLabel: 'À propos',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
               name={'help-circle'} 
