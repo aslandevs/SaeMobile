@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Camera,FlashMode } from 'expo-camera';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Camera, FlashMode } from 'expo-camera';
+import { View, Image, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid, Button as RNButton  } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
-import { BarCodeScanner, BarCodeScannerConstants  } from 'expo-barcode-scanner';
+import { BarCodeScanner, BarCodeScannerConstants } from 'expo-barcode-scanner';
 import { Alert } from 'react-native';
 
 const QrCodeScreen = () => {
@@ -16,11 +16,34 @@ const QrCodeScreen = () => {
   const hideHelpModal = () => setModalVisibility(false);
 
 
-  useEffect(() => {
-    (async () => {
+  const handleCameraPermission = async () => {
+    console.log('handleCameraPermission called');
+    if (Platform.OS === 'android') {
+      console.log('Platform is Android');
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message: 'App needs access to your camera.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      console.log('Permission result:', granted);
+      setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } else if (Platform.OS === 'ios') {
+      console.log('Platform is iOS');
       const { status } = await Camera.requestCameraPermissionsAsync();
+      console.log('Permission result:', status);
       setHasPermission(status === 'granted');
-    })();
+      return status === 'granted';
+    }
+  };
+
+  useEffect(() => {
+    handleCameraPermission();
   }, []);
 
   const toggleCamera = () => {
@@ -29,8 +52,7 @@ const QrCodeScreen = () => {
 
   function extraireCIP(value) {
     return value.slice(3, 16);
-}
-
+  }
 
   const handleBarCodeScanned = ({ data }) => {
     if (data && data !== scannedData) {
@@ -49,8 +71,21 @@ const QrCodeScreen = () => {
     }
   };
 
-  if (hasPermission === null) { return <View />;}
-  if (hasPermission === false) {return <Text>No access to camera</Text>;}
+
+
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return (
+      <View style={styles.container}>
+        <Text>No access to camera</Text>
+        <TouchableOpacity style={styles.button} onPress={handleCameraPermission}>
+          <Text style={styles.buttonText}>Allow Camera Access</Text>
+        </TouchableOpacity>          
+      </View>
+    );
+  }
 
   return (
     <Provider>
@@ -59,19 +94,20 @@ const QrCodeScreen = () => {
           style={styles.camera}
           type={type}
           barCodeScannerProps={{
-            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.datamatrix]}}
+            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.datamatrix]
+          }}
           autoFocus={Camera.Constants.AutoFocus.on}
           onBarCodeScanned={handleBarCodeScanned}
         >
 
-            <View style={styles.buttonContainer}>
-              <Button 
-                mode="contained"
-                onPress={() => setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}
-              >
-                Tourner la caméra
-              </Button>
-            </View>
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={() => setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}
+            >
+              Tourner la caméra
+            </Button>
+          </View>
 
         </Camera>
       )}
@@ -80,45 +116,45 @@ const QrCodeScreen = () => {
         style={styles.container}
       >
         <Image style={{ width: 150, height: 150 }} source={require('../assets/images/qr_code_exemple.png')} />
-          <Button
-            mode="contained"
-            onPress={toggleCamera}
-          >
-            {isCameraOpen ? "Ne plus Scanner le QR Code" : "Scanner le QR Code"}
-          </Button>
-      </View>
-      <View  style={{alignItems:'center', marginBottom: 15}}>
         <Button
-            mode="contained"
-            onPress={() => showHelpModal()}
-            style={styles.btnHelp}
-          >
-            Aide
+          mode="contained"
+          onPress={toggleCamera}
+        >
+          {isCameraOpen ? "Ne plus Scanner le QR Code" : "Scanner le QR Code"}
+        </Button>
+      </View>
+      <View style={{ alignItems: 'center', marginBottom: 15 }}>
+        <Button
+          mode="contained"
+          onPress={() => showHelpModal()}
+          style={styles.btnHelp}
+        >
+          Aide
           </Button>
       </View>
-        <Portal>
-          <Modal visible={visible} onDismiss={hideHelpModal}>
-            <View style={styles.modalView}>
-              <Image
-                source={require('../assets/images/helpqrcode/help_qrcode.png')}
-                style={{ width: 174, height: 232, resizeMode: 'cover'}}
-              ></Image>
-              <Text
-                style={{textAlign: 'justify', marginTop: 15, fontSize: 15}}
-              >
-                Scannez vos médicaments à l’aide de l’appareil photo pour obtenir le code CIP.
+      <Portal>
+        <Modal visible={visible} onDismiss={hideHelpModal}>
+          <View style={styles.modalView}>
+            <Image
+              source={require('../assets/images/helpqrcode/help_qrcode.png')}
+              style={{ width: 174, height: 232, resizeMode: 'cover' }}
+            ></Image>
+            <Text
+              style={{ textAlign: 'justify', marginTop: 15, fontSize: 15 }}
+            >
+              Scannez vos médicaments à l’aide de l’appareil photo pour obtenir le code CIP.
               </Text>
 
-              <Button
-                mode="contained"
-                onPress={() => hideHelpModal()}
-                style={[styles.btnHelp, {marginBottom: -16,marginTop: 30}]}
-              >
-                Fermer
+            <Button
+              mode="contained"
+              onPress={() => hideHelpModal()}
+              style={[styles.btnHelp, { marginBottom: -16, marginTop: 30 }]}
+            >
+              Fermer
               </Button>
-            </View>
-          </Modal>
-        </Portal>
+          </View>
+        </Modal>
+      </Portal>
     </Provider>
   );
 };
@@ -153,6 +189,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  button: {
+    backgroundColor: 'blue', // Couleur de fond du bouton
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white', // Couleur du texte du bouton
+    fontWeight: 'bold',
   },
 });
 
