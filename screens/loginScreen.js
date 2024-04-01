@@ -1,20 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState,useContext ,createContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import {doc, getDocs, query, collection} from 'firebase/firestore';
+import db from '../db/firestore';
+import { AuthContext } from '../context/AuthContext';
 
-const LoginScreen = ({ setIsLoggedIn }) => {
-    const [email, setEmail] = useState('');
+
+const LoginScreen = ({setIsLoggedIn}) => {
+    const [email, setEmailLogin] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
+    const {setRole, setEmail } = useContext(AuthContext);
 
     const handleLogin = () => {
 
-        if (email === 'test' && password === '123') {
-            setIsLoggedIn(true);
-        } else {
-            console.log('Identifiants incorrects');
+        if (!email || !password) {
+            alert('Veuillez remplir tous les champs');
+            return;
         }
+
+        getDocs(query(collection(db, 'user'))).then((snapshot) => {
+            snapshot.forEach((doc) => {
+                console.log(doc.id, '=>', doc.data());
+                if (doc.data().email === email && doc.data().password === password) {
+                    setRole(doc.data().role);
+                    setEmail(doc.data().email);
+                    setIsLoggedIn(true);
+                    console.log('Login success');
+                } else {
+                    console.log('Identifiants incorrects');
+                }
+
+            });
+        }).catch((error) => {
+            console.log('Error getting documents: ', error);
+        }
+        );
     };
 
 
@@ -31,7 +53,7 @@ const LoginScreen = ({ setIsLoggedIn }) => {
                     keyboardType="email-address"
                     style={{ margin: 10 }}
                     value={email}
-                    onChangeText={text => setEmail(text)}
+                    onChangeText={text => setEmailLogin(text)}
                 />
                 <TextInput
                     label="Password"

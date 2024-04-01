@@ -1,6 +1,5 @@
-import * as React from 'react';
-import { useState } from 'react';
-import { StatusBar } from 'react-native';
+import React, { useContext,useState } from 'react';
+import { StatusBar} from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -12,12 +11,16 @@ import aboutScreen from './screens/aboutScreen';
 import LoginScreen from './screens/loginScreen';
 import RegisterScreen from './screens/registerScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 function MainTab() {
+  const { role, email } = useContext(AuthContext);
+  console.log('Role : ' + role);
+  console.log('Email : ' + email);
   return (
     <Tab.Navigator initialRouteName="Accueil">
       <Tab.Screen 
@@ -85,6 +88,23 @@ function MainTab() {
           },
         }} 
       />
+
+      {role === 'admin' && (
+        <Tab.Screen 
+          name="Admin" 
+          component={QrCodeScreen} 
+          options={{
+            tabBarLabel: 'Admin',
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons 
+                name={'shield'}
+                size={size} 
+                color={color} 
+              />
+            ),
+          }} 
+        />
+      )}
       
       <Tab.Screen 
         name="À propos" 
@@ -104,27 +124,27 @@ function MainTab() {
   )
 }
 
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
   return (
-    
-    <SafeAreaProvider>
-      <StatusBar barStyle='default' />
-      <NavigationContainer>
-        <Stack.Navigator>
-          {isLoggedIn ? (
-            <Stack.Screen name="MainTab" component={MainTab} options={{ headerShown: false }} />
-          ) : (
-            <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login'}}>
-
-              {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-            </Stack.Screen>
-          )}
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <StatusBar barStyle='default' />
+        <NavigationContainer>
+          <Stack.Navigator>
+            {isLoggedIn ? (
+              <Stack.Screen name="MainTab" options={{ headerShown: false }} component={MainTab} />
+            ) : (
+              <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login'}}>
+                {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+              </Stack.Screen>
+            )}
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 }
 

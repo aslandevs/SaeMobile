@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, TextInput, Provider } from 'react-native-paper';
+import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
+import db from '../db/firestore';
+
 
 const RegisterScreen = () => {
-    const [nom, setNom] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState('user');
+
+
 
     const handleRegister = () => {
-        if (!nom || !email || !password || !confirmPassword) {
+        if (!email || !password || !confirmPassword) {
             alert('Veuillez remplir tous les champs');
             return;
         }
@@ -26,9 +31,16 @@ const RegisterScreen = () => {
         
 
         if (password === confirmPassword) {
-
-            console.log('Email:', email);
-            console.log('Password');
+            addDoc(collection(db, 'user'), {
+                email: email,
+                password: password,
+                role: role,
+            }).then(() => {
+                    alert('Utilisateur cree avec succes');
+            }).catch(error => {
+                    alert('Erreur lors de la crÃ©ation de l\'utilisateur');
+                    console.error(error);
+            });
             
         } else {
             alert('Les deux mots de passe ne sont pas identiques')
@@ -39,13 +51,6 @@ const RegisterScreen = () => {
         <Provider>
             <View style={styles.container}>
             <View style={styles.content}>
-                <TextInput
-                    label="Nom"
-                    placeholder="Nom"
-                    style={{ margin: 10 }}
-                    value={nom}
-                    onChangeText={text => setNom(text)}
-                />
                 <TextInput
                     label="Email"
                     placeholder="Email"
