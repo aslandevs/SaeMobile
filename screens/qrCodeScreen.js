@@ -4,6 +4,7 @@ import { View, Image, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import { BarCodeScanner, BarCodeScannerConstants } from 'expo-barcode-scanner';
 import { Alert } from 'react-native';
+import data  from '../assets/json/medic.json';
 
 const QrCodeScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -50,24 +51,40 @@ const QrCodeScreen = () => {
     setIsCameraOpen(prevState => !prevState);
   };
 
-  function extraireCIP(value) {
+  const extraireCIP = (value) => {
     return value.slice(3, 16);
   }
 
+  const extraireNom = (value) => {
+    const newdata = data["medic"];
+    for (let i = 0; i < newdata.length; i++) {
+      if (value == newdata[i].cip13) {
+        return newdata[i].produit.toLowerCase();
+      }
+    }
+    return "Médicament inconnu";
+  }
   const handleBarCodeScanned = ({ data }) => {
     if (data && data !== scannedData) {
       setScannedData(data);
       Alert.alert(
-        'QR Code Scanned',
-        `Data: ${data}\nCIP: ${extraireCIP(data)}`,
+        'DataMatrix Scanner',
+        `Le Code CIP: ${extraireCIP(data)}`+
+        `\nNom du médicament: ${extraireNom(extraireCIP(data))}`
+        ,
         [
           {
-            text: 'OK',
+            text: 'Report',
+            onPress: () => setScannedData(null),
+          },
+          {
+            text: 'Annuler',
             onPress: () => setScannedData(null),
           },
         ],
         { cancelable: false }
       );
+
     }
   };
 

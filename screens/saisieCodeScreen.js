@@ -1,34 +1,90 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image, Alert,TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
+import data from '../assets/json/medic.json';
+
+
+const extraireNom = (value) => {
+  const newdata = data["medic"];
+  for (let i = 0; i < newdata.length; i++) {
+    if (value == newdata[i].cip13) {
+      return newdata[i].produit;
+    }
+  }
+  return null;
+};
+
+
+const checkmedic = (value) => {
+
+  const CipCode = parseInt(value,10);
+
+  if (!CipCode) { 
+    Alert.alert('Erreur', "Champ vide");
+    return;
+  }
+
+  const medicname = extraireNom(CipCode);
+
+  if (!medicname) {
+    Alert.alert('Erreur', 'Code CIP invalide');
+    return;
+  }
+
+  Alert.alert(
+    'Information sur le médicament',
+    `\nNom du médicament: `+medicname
+    ,
+    [
+      {
+        text: 'Report',
+        onPress: () => setCipValue(),
+      },
+      {
+        text: 'Annuler',
+        onPress: () => setCipValue(),
+      },
+    ],
+    { cancelable: false }
+  );
+};
+
+
+
 
 const SaisieCodeScreen = () => {
   const [visible, setVisible] = useState(false);
+  const [cipValue, setCipValue] = useState();
 
   const showHelpModal = () => setVisible(true);
   const hideHelpModal = () => setVisible(false);
 
   return (
     <Provider>
-      <View style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
 
-        <TextInput
-          mode="outlined"
-          label="Code CIP"
-          placeholder="Entrer le code CIP du médicament"
-          style={{width: 300, marginBottom: 20}}
-        />
+          <TextInput
+            mode="outlined"
+            label="Code CIP"
+            placeholder="Entrer le code CIP du médicament"
+            style={{width: 300, marginBottom: 20}}
+            value={cipValue}
+            onChangeText={text => setCipValue(text)}
+            keyboardType="numeric"
+          />
 
-        <Button
-          mode="contained"
-          onPress={() => alert('Button pressed')}
-          style={styles.button}
-        >
-          Valider
-        </Button>
+          <Button
+            mode="contained"
+            onPress={() => checkmedic(cipValue)}
+            style={styles.button}
+          >
+            Valider
+          </Button>
 
-      </View>
-
+        </View>
+      </TouchableWithoutFeedback>
+      
       <View style={{flex: 1, justifyContent: 'flex-end'}}>
 
         <Button
