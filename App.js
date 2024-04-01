@@ -13,13 +13,26 @@ import RegisterScreen from './screens/registerScreen';
 import MesReportScreen from './screens/mesreportScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, AuthContext } from './context/AuthContext';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {getDocs, query, collection} from 'firebase/firestore';
+import db from './db/firestore';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-function MainTab() {
-  const { role, email } = useContext(AuthContext);
+const MainTab = ({autorole, autoemail}) => {
+  const { role, setRole, email, setEmail  } = useContext(AuthContext);
+
+  useEffect(() => {
+    
+    if (!role && autorole) {
+      setRole(autorole);
+    }
+    if (!email && autoemail) {
+      setEmail(autoemail);
+    }
+  }, [role, email]);
+  
   return (
     <Tab.Navigator initialRouteName="Accueil">
       <Tab.Screen 
@@ -124,23 +137,37 @@ function MainTab() {
 }
 
 
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // useEffect(() => {
-  //   // Vérifier si un utilisateur est déjà connecté
-  //   const unsubscribe = firebase.auth().onAuthStateChanged(user => {
-  //     if (user) {
-  //       setIsLoggedIn(true); // Mettre à jour l'état isLoggedIn si un utilisateur est connecté
-  //     } else {
-  //       setIsLoggedIn(false);
-  //     }
-  //   });
-
-  //   return () => unsubscribe(); // Nettoyer l'écouteur d'état
-  // }, []);
+  const [autorole, setRole] = useState('user');
+  const [autoemail, setEmail] = useState('');
 
 
+  
+  useEffect(() => {
+    const getUserInfoFromFirestore = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('loggedInUserUuid');
+        if (userId) {
+          getDocs(query(collection(db, 'user'))).then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              if (doc.data().uuid === userId) {
+                setRole(doc.data().role);
+                setEmail(doc.data().email);
+                setIsLoggedIn(true);
+              }
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des informations de l\'utilisateur depuis Firestore :', error);
+      }
+    };
+
+    getUserInfoFromFirestore();
+  }, []);
+  
   return (
     <AuthProvider>
       <SafeAreaProvider>
@@ -148,7 +175,9 @@ function App() {
         <NavigationContainer>
           <Stack.Navigator>
             {isLoggedIn ? (
-              <Stack.Screen name="MainTab" options={{ headerShown: false }} component={MainTab} />
+              <Stack.Screen name="MainTab" options={{ headerShown: false }}>
+                {props => <MainTab {...props} autorole={autorole} autoemail={autoemail} />}
+              </Stack.Screen>
             ) : (
               <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login'}}>
                 {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}

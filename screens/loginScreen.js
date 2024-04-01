@@ -2,9 +2,10 @@ import React, { useState,useContext ,createContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import {getDocs, query, collection} from 'firebase/firestore';
+import {getDocs, query, collection, updateDoc} from 'firebase/firestore';
 import db from '../db/firestore';
 import { AuthContext } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const LoginScreen = ({setIsLoggedIn}) => {
@@ -13,6 +14,13 @@ const LoginScreen = ({setIsLoggedIn}) => {
     const navigation = useNavigation();
     const {setRole, setEmail } = useContext(AuthContext);
 
+
+    const generateUUID = () => {
+        const currentDate = new Date().getTime().toString(36);
+        const randomString = Math.random().toString(36).substring(2, 15);
+        return currentDate + '-' + randomString;
+      };
+      
     const handleLogin = () => {
 
         if (!email || !password) {
@@ -22,11 +30,18 @@ const LoginScreen = ({setIsLoggedIn}) => {
 
         getDocs(query(collection(db, 'user'))).then((snapshot) => {
             snapshot.forEach((doc) => {
-                console.log(doc.id, '=>', doc.data());
                 if (doc.data().email === email && doc.data().password === password) {
                     setRole(doc.data().role);
                     setEmail(doc.data().email);
+                    let userUuid = doc.data().uuid;
+                    if (doc.data().uuid == '' || doc.data().uuid == ""){
+                        userUuid = generateUUID();
+                        updateDoc(doc.ref, {
+                            uuid: userUuid
+                        });
+                    }
                     setIsLoggedIn(true);
+                    AsyncStorage.setItem('loggedInUserUuid', userUuid);
                     console.log('Login success');
                 } else {
                     console.log('Identifiants incorrects');

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, TextInput, Provider } from 'react-native-paper';
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 import db from '../db/firestore';
+
+
 
 
 const RegisterScreen = () => {
@@ -11,8 +14,16 @@ const RegisterScreen = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('user');
 
+    const navigation = useNavigation();
 
 
+    const generateUUID = () => {
+        const currentDate = new Date().getTime().toString(36);
+        const randomString = Math.random().toString(36).substring(2, 15);
+        return currentDate + '-' + randomString;
+      };
+
+      
     const handleRegister = () => {
         if (!email || !password || !confirmPassword) {
             alert('Veuillez remplir tous les champs');
@@ -32,11 +43,13 @@ const RegisterScreen = () => {
 
         if (password === confirmPassword) {
             addDoc(collection(db, 'user'), {
+                uuid:  generateUUID(),
                 email: email,
                 password: password,
                 role: role,
             }).then(() => {
                     alert('Utilisateur cree avec succes');
+                    navigation.navigate('Login');
             }).catch(error => {
                     alert('Erreur lors de la crÃ©ation de l\'utilisateur');
                     console.error(error);
