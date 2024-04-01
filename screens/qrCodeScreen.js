@@ -1,20 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Camera, FlashMode } from 'expo-camera';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid, Button as RNButton  } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid,TouchableWithoutFeedback,Keyboard } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import { BarCodeScanner, BarCodeScannerConstants } from 'expo-barcode-scanner';
 import { Alert } from 'react-native';
 import data  from '../assets/json/medic.json';
+import {addDoc, collection } from 'firebase/firestore';
+import db from '../db/firestore';
+import { AuthContext } from '../context/AuthContext';
 
 const QrCodeScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [scannedData, setScannedData] = useState(null);
+  const [medicData, setMedicData] = useState(null);
+  const [message, setMessage] = useState('');
+  const [isReportButtonClicked, setIsReportButtonClicked] = useState(false);
   const [visible, setModalVisibility] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  
+  const {email} = useContext(AuthContext);
 
   const showHelpModal = () => setModalVisibility(true);
   const hideHelpModal = () => setModalVisibility(false);
+
+  const showReportModal = () => setReportModalVisible(true);
+  const hideReportModal = () => setReportModalVisible(false);
 
 
   const handleCameraPermission = async () => {
@@ -24,10 +36,10 @@ const QrCodeScreen = () => {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.CAMERA,
         {
-          title: 'Camera Permission',
-          message: 'App needs access to your camera.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
+          title: 'Permission d\'accès à la caméra',
+          message: 'L\'application a besoin d\'accéder à votre caméra.',
+          buttonNeutral: 'Demander plus tard',
+          buttonNegative: 'Annuler',
           buttonPositive: 'OK',
         },
       );
@@ -62,22 +74,26 @@ const QrCodeScreen = () => {
     }
     return "Médicament inconnu";
   }
+
   const handleBarCodeScanned = ({ data }) => {
-    if (data && data !== scannedData) {
+    if (data ) {
       setScannedData(data);
+      const cip = extraireCIP(data);
+      const name = extraireNom(cip);
+      setMedicData({ cip, name });
       Alert.alert(
         'DataMatrix Scanner',
-        `Le Code CIP: ${extraireCIP(data)}`+
-        `\nNom du médicament: ${extraireNom(extraireCIP(data))}`
+        `Le Code CIP est: ${cip}`+
+        `\nNom du médicament: ${name}`
         ,
         [
           {
             text: 'Report',
-            onPress: () => setScannedData(null),
+            onPress:showReportModal,
           },
           {
             text: 'Annuler',
-            onPress: () => setScannedData(null),
+            onPress: () => setScannedData(null) && setMedicData(null),
           },
         ],
         { cancelable: false }
@@ -86,7 +102,61 @@ const QrCodeScreen = () => {
     }
   };
 
+  const formatData = (timestamp) => {
+    const date = new Date(timestamp);
 
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate(); 
+    const hours = date.getHours(); 
+    const minutes = date.getMinutes(); 
+    const seconds = date.getSeconds(); 
+
+    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+
+    return formattedDate;
+};
+
+
+  const handleReport = ({ nom, cip, message }) => {
+    setIsReportButtonClicked(true);
+
+    addDoc(collection(db, 'report'), {
+      cip: cip,
+      medicament: nom,
+      email: email,
+      message: message,
+      date: formatData(new Date()),
+    }).then(() => {
+      setIsReportButtonClicked(false);
+      hideReportModal();
+      Alert.alert(
+        'Signalement',
+        'Votre signalement a été envoyé avec succès',
+        [
+          {
+            text: 'OK',
+            onPress: () => console.log('OK Pressed'),
+          },
+        ],
+        { cancelable: false }
+      );
+    }).catch(error => {
+      console.error(error);
+      setIsReportButtonClicked(false);
+      Alert.alert(
+        'Signalement',
+        'Erreur lors de l\'envoi du signalement',
+        [
+          {
+            text: 'OK',
+            onPress: () => console.log('OK Pressed'),
+          },
+        ],
+        { cancelable: false }
+      );
+    });
+  };
 
   if (hasPermission === null) {
     return <View />;
@@ -127,26 +197,23 @@ const QrCodeScreen = () => {
         </Camera>
       )}
 
-      <View
-        style={styles.container}
-      >
+      <View style={styles.container}>
         <Image style={{ width: 150, height: 150 }} source={require('../assets/images/qr_code_exemple.png')} />
-        <Button
-          mode="contained"
-          onPress={toggleCamera}
-        >
+
+        <Button mode="contained"onPress={toggleCamera} >
           {isCameraOpen ? "Ne plus Scanner le QR Code" : "Scanner le QR Code"}
         </Button>
+
       </View>
+
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
-        <Button
-          mode="contained"
-          onPress={() => showHelpModal()}
-          style={styles.btnHelp}
-        >
+
+        <Button mode="contained" onPress={() => showHelpModal()} style={styles.btnHelp} >
           Aide
-          </Button>
+        </Button>
+
       </View>
+
       <Portal>
         <Modal visible={visible} onDismiss={hideHelpModal}>
           <View style={styles.modalView}>
@@ -158,7 +225,7 @@ const QrCodeScreen = () => {
               style={{ textAlign: 'justify', marginTop: 15, fontSize: 15 }}
             >
               Scannez vos médicaments à l’aide de l’appareil photo pour obtenir le code CIP.
-              </Text>
+            </Text>
 
             <Button
               mode="contained"
@@ -166,10 +233,36 @@ const QrCodeScreen = () => {
               style={[styles.btnHelp, { marginBottom: -16, marginTop: 30 }]}
             >
               Fermer
-              </Button>
+            </Button>
           </View>
         </Modal>
       </Portal>
+
+      <Portal>
+        <Modal visible={reportModalVisible} onDismiss={hideReportModal} >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+
+          <View style={styles.modalView}>
+            <Text style={{ textAlign: 'center', fontSize: 20, marginBottom: 20 }}>
+              Signaler un problème
+            </Text>
+
+              <TextInput label="Nom du médicament" style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
+              <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip} />
+              <TextInput label="Description du problème" style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
+
+
+            <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30 }]} disabled={isReportButtonClicked}>
+              Signaler
+            </Button>
+            <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#606060"}]}>
+              Fermer
+            </Button>
+          </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      </Portal>
+
     </Provider>
   );
 };

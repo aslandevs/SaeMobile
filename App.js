@@ -1,4 +1,4 @@
-import React, { useContext,useState } from 'react';
+import React, { useContext,useState, useEffect} from 'react';
 import { StatusBar} from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import { NavigationContainer } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import SaisieCodeScreen from './screens/saisieCodeScreen';
 import aboutScreen from './screens/aboutScreen';
 import LoginScreen from './screens/loginScreen';
 import RegisterScreen from './screens/registerScreen';
+import MesReportScreen from './screens/mesreportScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 
@@ -19,8 +20,6 @@ const Stack = createStackNavigator();
 
 function MainTab() {
   const { role, email } = useContext(AuthContext);
-  console.log('Role : ' + role);
-  console.log('Email : ' + email);
   return (
     <Tab.Navigator initialRouteName="Accueil">
       <Tab.Screen 
@@ -72,7 +71,7 @@ function MainTab() {
       
       <Tab.Screen 
         name="Mes signalements" 
-        component={QrCodeScreen}
+        component={MesReportScreen}
         options={{
           tabBarLabel: 'Signalements',
           tabBarIcon: ({ focused, color, size }) => (
@@ -127,6 +126,21 @@ function MainTab() {
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // useEffect(() => {
+  //   // Vérifier si un utilisateur est déjà connecté
+  //   const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+  //     if (user) {
+  //       setIsLoggedIn(true); // Mettre à jour l'état isLoggedIn si un utilisateur est connecté
+  //     } else {
+  //       setIsLoggedIn(false);
+  //     }
+  //   });
+
+  //   return () => unsubscribe(); // Nettoyer l'écouteur d'état
+  // }, []);
+
+
   return (
     <AuthProvider>
       <SafeAreaProvider>

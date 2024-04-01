@@ -2,7 +2,7 @@ import React, { useState,useContext ,createContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import {doc, getDocs, query, collection} from 'firebase/firestore';
+import {getDocs, query, collection} from 'firebase/firestore';
 import db from '../db/firestore';
 import { AuthContext } from '../context/AuthContext';
 
