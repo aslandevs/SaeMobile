@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
+import { StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -78,6 +79,10 @@ function MainTab() {
               color={color} 
             />
           ),
+          tabBarOptions: {
+            activeTintColor: 'tomato',
+            inactiveTintColor: 'gray',
+          },
         }} 
       />
       
@@ -103,13 +108,16 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
+    
     <SafeAreaProvider>
+      <StatusBar barStyle='default' />
       <NavigationContainer>
         <Stack.Navigator>
           {isLoggedIn ? (
             <Stack.Screen name="MainTab" component={MainTab} options={{ headerShown: false }} />
           ) : (
-            <Stack.Screen name="Login" options={  options={ headerShown: true, title: 'Login' }}>
+            <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login'}}>
+
               {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
             </Stack.Screen>
           )}

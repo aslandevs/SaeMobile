@@ -18,9 +18,9 @@ const QrCodeScreen = () => {
 
 
   const handleCameraPermission = async () => {
-    console.log('handleCameraPermission called');
+
     if (Platform.OS === 'android') {
-      console.log('Platform is Android');
+
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.CAMERA,
         {
@@ -31,13 +31,11 @@ const QrCodeScreen = () => {
           buttonPositive: 'OK',
         },
       );
-      console.log('Permission result:', granted);
+
       setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } else if (Platform.OS === 'ios') {
-      console.log('Platform is iOS');
       const { status } = await Camera.requestCameraPermissionsAsync();
-      console.log('Permission result:', status);
       setHasPermission(status === 'granted');
       return status === 'granted';
     }
@@ -84,7 +82,7 @@ const QrCodeScreen = () => {
         ],
         { cancelable: false }
       );
-
+      setIsCameraOpen(false);
     }
   };
 
