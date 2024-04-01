@@ -1,50 +1,56 @@
 import * as React from 'react';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons'; 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/homeScreen';
 import QrCodeScreen from './screens/qrCodeScreen';
 import SaisieCodeScreen from './screens/saisieCodeScreen';
 import aboutScreen from './screens/aboutScreen';
+import LoginScreen from './screens/loginScreen';
+import RegisterScreen from './screens/registerScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-
-function App() {
+function MainTab() {
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-      <Tab.Navigator initialRouteName="Home">
+    <Tab.Navigator initialRouteName="Accueil">
       <Tab.Screen 
-      name="QR_CODE" 
-      component={QrCodeScreen}
-      options={{
-        title: 'QR CODE',
-        tabBarLabel: 'QR CODE',
-        tabBarIcon: ({ focused, color, size }) => (
-          <Ionicons 
-            name={'qr-code-outline'} 
-            size={size} 
-            color={color} 
-          />
-        ),
-      }} />
+        name="QR_CODE" 
+        component={QrCodeScreen}
+        options={{
+          title: 'QR CODE',
+          tabBarLabel: 'QR CODE',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons 
+              name={'qr-code-outline'} 
+              size={size} 
+              color={color} 
+            />
+          ),
+        }} 
+      />
 
-    <Tab.Screen 
-      name="SaisieCode" 
-      component={SaisieCodeScreen}
-      options={{
-        title: 'Saisier le Code',
-        tabBarLabel: 'Saisier le Code',
-        tabBarIcon: ({ focused, color, size }) => (
-          <Ionicons 
-            name={'barcode'} 
-            size={size} 
-            color={color} 
-          />
-        ),
-      }} />
+      <Tab.Screen 
+        name="SaisieCode" 
+        component={SaisieCodeScreen}
+        options={{
+          title: 'Saisir le Code',
+          tabBarLabel: 'Saisir le Code',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons 
+              name={'barcode'} 
+              size={size} 
+              color={color} 
+            />
+          ),
+        }} 
+      />
+      
       <Tab.Screen 
         name="Accueil" 
         component={HomeScreen} 
@@ -59,6 +65,7 @@ function App() {
           ),
         }}
       />
+      
       <Tab.Screen 
         name="Mes signalements" 
         component={QrCodeScreen}
@@ -73,6 +80,7 @@ function App() {
           ),
         }} 
       />
+      
       <Tab.Screen 
         name="À propos" 
         component={aboutScreen}
@@ -87,9 +95,28 @@ function App() {
           ),
         }} 
       />
-      </Tab.Navigator>
-    </NavigationContainer>
-  </SafeAreaProvider>
+    </Tab.Navigator>
+  )
+}
+
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {isLoggedIn ? (
+            <Stack.Screen name="MainTab" component={MainTab} options={{ headerShown: false }} />
+          ) : (
+            <Stack.Screen name="Login" options={  options={ headerShown: true, title: 'Login' }}>
+              {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+            </Stack.Screen>
+          )}
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
