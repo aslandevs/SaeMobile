@@ -4,52 +4,6 @@ import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-p
 import data from '../assets/json/medic.json';
 
 
-const extraireNom = (value) => {
-  const newdata = data["medic"];
-  for (let i = 0; i < newdata.length; i++) {
-    if (value == newdata[i].cip13) {
-      return newdata[i].produit;
-    }
-  }
-  return null;
-};
-
-
-const checkmedic = (value) => {
-
-  const CipCode = parseInt(value,10);
-
-  if (!CipCode) { 
-    Alert.alert('Erreur', "Champ vide");
-    return;
-  }
-
-  const medicname = extraireNom(CipCode);
-
-  if (!medicname) {
-    Alert.alert('Erreur', 'Code CIP invalide');
-    return;
-  }
-
-  Alert.alert(
-    'Information sur le médicament',
-    `\nNom du médicament: `+medicname
-    ,
-    [
-      {
-        text: 'Report',
-        onPress: () => setCipValue(),
-      },
-      {
-        text: 'Annuler',
-        onPress: () => setCipValue(),
-      },
-    ],
-    { cancelable: false }
-  );
-};
-
-
 
 
 const SaisieCodeScreen = () => {
@@ -58,6 +12,61 @@ const SaisieCodeScreen = () => {
 
   const showHelpModal = () => setVisible(true);
   const hideHelpModal = () => setVisible(false);
+
+  const extraireNom = (value) => {
+    const newdata = data["medic"];
+    let codecip;
+    let valuetostring = value.toString();
+  
+    if (valuetostring.length < 13 || valuetostring.length > 14) {
+      return null;
+    }
+
+    if (value.length != 13) {
+      codecip = parseInt(valuetostring.slice(1, 14), 10);
+    }
+
+    for (let i = 0; i < newdata.length; i++) {
+      if (value == newdata[i].cip13) {
+        return newdata[i].produit;
+      }
+    }
+    return null;
+  };
+  
+  
+  const checkmedic = (value) => {
+    const CipCode = parseInt(value,10);
+  
+    if (!CipCode) { 
+      Alert.alert('Erreur', "Champ vide");
+      return;
+    }
+  
+    const medicname = extraireNom(CipCode);
+  
+    if (!medicname) {
+      Alert.alert('Erreur', 'Code CIP invalide');
+      return;
+    }
+  
+    Alert.alert(
+      'Information sur le médicament',
+      `\nNom du médicament: `+medicname
+      ,
+      [
+        {
+          text: 'Report',
+          onPress: () => setCipValue(),
+        },
+        {
+          text: 'Annuler',
+          onPress: () => setCipValue(),
+        },
+      ],
+      { cancelable: false }
+    );
+  };
 
   return (
     <Provider>
