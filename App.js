@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import HomeScreen from './screens/homeScreen';
 import QrCodeScreen from './screens/qrCodeScreen';
 import SaisieCodeScreen from './screens/saisieCodeScreen';
 import aboutScreen from './screens/aboutScreen';
@@ -20,16 +19,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getDocs, query, collection, onSnapshot} from 'firebase/firestore';
 import db from './db/firestore';
 import NetInfo from "@react-native-community/netinfo";
-import i18n from './languages/i18n';
 import { useTranslation } from 'react-i18next';
 import 'intl-pluralrules';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const MainTab = ({autorole, autoemail, trans }) => {
+const MainTab = ({autorole, autoemail}) => {
   const { role, setRole, email, setEmail  } = useContext(AuthContext);
-
+  const { t } = useTranslation();
+  const trans = (key) => t(key);
 
   useEffect(() => {
     
@@ -42,10 +41,10 @@ const MainTab = ({autorole, autoemail, trans }) => {
   }, [role, email]);
 
   return (
-    <Tab.Navigator initialRouteName="Accueil" 
+    <Tab.Navigator initialRouteName="DataMatrix" 
     
       screenOptions={{ 
-    tabBarActiveTintColor: 'tomato', 
+    tabBarActiveTintColor: '#29AAE4', 
     tabBarInactiveTintColor: 'gray',
     tabBarStyle: {
       display: 'flex'
@@ -103,22 +102,6 @@ const MainTab = ({autorole, autoemail, trans }) => {
         }} 
       />
 
-      <Tab.Screen 
-        name="Accueil"
-        component={HomeScreen} 
-        options={{
-          title: trans('app_Accueil'),
-          tabBarLabel: trans('app_Accueil'),
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons 
-              name={'home'} 
-              size={size} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      
 
       {role === 'admin' && (
         <Tab.Screen 
@@ -177,21 +160,18 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [autorole, setRole] = useState('user');
   const [autoemail, setEmail] = useState('');
-  const { t } = useTranslation();
 
   const handleLogout = () => {
     AsyncStorage.removeItem("loggedInUserUuid");
     setIsLoggedIn(false);
-};
+  };
 
-
-  
   useEffect(() => {
     const getUserInfoFromFirestore = async () => {
       try {
         const isConnected = await NetInfo.fetch().then(state => state.isConnected);
 
-        const userId = await AsyncStorage.getItem('loggedInUserUuid');
+        const userId = await AsyncStorage.getItem('loggedInUserUuid') || null;
         const userCredentials = await AsyncStorage.getItem('userCredentials');
         if (userId) {
           if (!isConnected) {
@@ -221,15 +201,17 @@ const App = () => {
 
     getUserInfoFromFirestore();
   }, []);
+ // const { t } = useTranslation();
 
-  const reportsCollection = collection(db, 'reports');
 
-  const unsubscribe = onSnapshot(reportsCollection, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      const reportData = change.doc.data();
-      console.log('Changement détecté:', change.type, reportData);
-    });
-  });
+  // const reportsCollection = collection(db, 'reports');
+
+  // const unsubscribe = onSnapshot(reportsCollection, (snapshot) => {
+  //   snapshot.docChanges().forEach((change) => {
+  //     const reportData = change.doc.data();
+  //     console.log('Changement détecté:', change.type, reportData);
+  //   });
+  // });
   
   
     return (
@@ -241,18 +223,18 @@ const App = () => {
                         {isLoggedIn ? (
                             <>
                                 <Stack.Screen name="MainTab" options={{ headerShown: false }}>
-                                  {props => <MainTab {...props} autorole={autorole} autoemail={autoemail} trans={t}/>}
+                                  {props => <MainTab {...props} autorole={autorole} autoemail={autoemail} />}
                                 </Stack.Screen>
                                 <Stack.Screen name="Logout" options={{ headerShown: false }}>
                                     {props => <LogoutScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
                                 </Stack.Screen>
                             </>
                         ) : (
-                            <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login' }}>
+                            <Stack.Screen name="Login" options={{ headerShown: true, title: 'login' }}>
                                 {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
                             </Stack.Screen>
                         )}
-                        <Stack.Screen name="Register" component={RegisterScreen} />
+                        <Stack.Screen name="Register" options={{title:'register'}}  component={RegisterScreen} />
                     </Stack.Navigator>
                 </NavigationContainer>
             </SafeAreaProvider>

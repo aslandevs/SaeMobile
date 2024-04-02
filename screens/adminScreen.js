@@ -3,7 +3,7 @@
 import { SvgChart, SVGRenderer } from '@wuba/react-native-echarts';
 import * as echarts from 'echarts/core';
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet,Dimensions, ScrollView } from 'react-native';
+import { View, StyleSheet,Dimensions, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import {
@@ -15,13 +15,14 @@ import {
   GridComponent,
 } from 'echarts/components';
 
-import { getDocs, collection} from 'firebase/firestore';
+import { getDocs, collection, deleteDoc, doc} from 'firebase/firestore';
 import db from '../db/firestore'; // Assurez-vous d'importer votre configuration de Firebase Firestore
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
 import { useTranslation } from 'react-i18next';
 import 'intl-pluralrules';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Register extensions
 echarts.use([
@@ -97,7 +98,6 @@ const AdminScreen = () => {
     const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
     const { t } = useTranslation();
     
-    useEffect(() => {
 
         const fetchData = async () => {
           try {
@@ -113,8 +113,6 @@ const AdminScreen = () => {
                 }
             
             }else{
-
-
 
                 const reportQuerySnapshot = await getDocs(collection(db, 'report'));
                 const fetchedReports = [];
@@ -144,9 +142,13 @@ const AdminScreen = () => {
             console.error('Error fetching data:', error);
           }
         };
+
+      useFocusEffect( useCallback(() => {
         fetchData();
-      }, []);
+      }, []));
+
       
+
   
     const chartData = generateChartData(AdminReports);
   
@@ -187,14 +189,14 @@ const AdminScreen = () => {
                     <Button 
                         mode="contained"
                         onPress={() => setIsDropdownOpen(true)}
-                        style={{ marginBottom: 10, width: 300, alignSelf: 'center' }}
+                        style={{ marginBottom: 10, width: 300, alignSelf: 'center', backgroundColor: "#8EC641" }}
                     >
                         {t('admin_selectUser')}
                     </Button>
                     <Button
                         mode="contained"
                         onPress={() => setIsGraphModalOpen(true)}
-                        style={{ marginBottom: 10, width: 300, alignSelf: 'center' }}
+                        style={{ marginBottom: 10, width: 300, alignSelf: 'center', backgroundColor: "#8EC641" }}
                     >
                         {t('admin_graphique')}
                     </Button>
@@ -271,26 +273,83 @@ const AdminScreen = () => {
                                         return dateB - dateA;
                                     })
                                     .map((report, index) => (
-                                    <View
-                                        key={index}
-                                        style={{
-                                        marginBottom: 20,
-                                        padding: 10,
-                                        borderColor: 'black',
-                                        borderWidth: 1,
-                                        borderRadius: 10,
-                                        }}
-                                    >
-                                        <Text style={{ fontSize: 16, marginBottom: 10 }}>
-                                        {`${t('admin_selectUser_Message_medicament')}: ${report.medicament}`}
-                                        </Text>
-                                        <Text style={{ fontSize: 16, marginBottom: 10 }}>
-                                        {`Message: ${report.message}`}
-                                        </Text>
-                                        <Text style={{ fontSize: 16, marginBottom: 10 }}>
-                                        {`${t('admin_selectUser_Message_Date')}: ${report.date}`}
-                                        </Text>
-                                    </View>
+<TouchableOpacity 
+    key={index}
+    onPress={async () => {
+        Alert.alert(
+            `${t('admin_selectUser_Message_medicament')}: ${report.medicament}`,
+            `Message: ${report.message}\n${t('admin_selectUser_Message_Date')}: ${report.date}`,
+            [
+                {
+                    text: t('admin_selectUser_Message_delete'),
+                    onPress: async () => {
+                        console.log('Deleting report:', report.cip);
+
+                        const isconnected = await NetInfo.fetch().then(state => state.isConnected);
+    
+                        if (!isconnected) {
+                          alert(t('admin_selectUser_Message_noInternet'));
+                          return;
+                        }
+                        const querySnapshot = await getDocs(collection(db, 'report'));
+                        querySnapshot.forEach(async (doc) => {
+                            const reportData = doc.data();
+                            if (
+                                reportData.cip === report.cip &&
+                                reportData.email === report.email &&
+                                reportData.date === report.date &&
+                                reportData.message === report.message &&
+                                reportData.medicament === report.medicament
+                            ) {
+                                await deleteDoc(doc.ref);
+                                const newAdminReports = AdminReports.filter(
+                                    (rep) =>
+                                        rep.cip !== report.cip ||
+                                        rep.email !== report.email ||
+                                        rep.date !== report.date ||
+                                        rep.message !== report.message ||
+                                        rep.medicament !== report.medicament
+                                );
+                                SetAdminReports(newAdminReports);
+                                AsyncStorage.setItem('AdminAllReport', JSON.stringify(newAdminReports));
+                                alert(t('admin_selectUser_Message_delete'));
+                            }
+                        });
+                    },
+                },
+                {
+                    text: t('button_close'),
+                    onPress: () => console.log('Cancel Pressed'),
+                    style: 'cancel',
+                },
+            ],
+            { cancelable: false }
+        );
+    }}
+>
+
+
+                                        <View
+                                            key={index}
+                                            style={{
+                                            marginBottom: 20,
+                                            padding: 10,
+                                            borderColor: 'black',
+                                            borderWidth: 1,
+                                            borderRadius: 10,
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                                            {`${t('admin_selectUser_Message_medicament')}: ${report.medicament}`}
+                                            </Text>
+                                            <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                                            {`Message: ${report.message}`}
+                                            </Text>
+                                            <Text style={{ fontSize: 16, marginBottom: 10 }}>
+                                            {`${t('admin_selectUser_Message_Date')}: ${report.date}`}
+                                            </Text>
+                                        </View>
+                                      </TouchableOpacity>
                                     ))}
                                 </ScrollView>
                             )
@@ -298,7 +357,7 @@ const AdminScreen = () => {
                         <Button
                             mode="contained"
                             onPress={() => setIsUserReportOpen(false)}
-                            style={{ marginTop: 15,marginBottom: 0, width: 100, alignSelf: 'center' }}
+                            style={{ marginTop: 15,marginBottom: 0, width: 100, alignSelf: 'center' , backgroundColor: "#8EC641"}}
                         >
                             {t('button_close')}
                         </Button>
@@ -314,7 +373,7 @@ const AdminScreen = () => {
                     <Button
                         mode="contained"
                         onPress={() => setIsGraphModalOpen(false)}
-                        style={{ marginBottom: 20, width: 100, alignSelf: 'center' }}
+                        style={{ marginBottom: 20, width: 100, alignSelf: 'center', backgroundColor: "#8EC641" }}
                     >
                             {t('button_close')}
                     </Button>

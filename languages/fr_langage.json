@@ -36,6 +36,8 @@
       "admin_selectUser_title": "Liste des utilisateurs",
       "admin_selectUser_default": "Sélectionnez un utilisateur",
       "admin_selectUser_search": "Rechercher",
+      "admin_selectUser_Message_delete": "Supprimer le signalement",
+
   
       "admin_selectUser_Message_medicament": "Médicament",
       "admin_selectUser_Message_Date": "Date",
@@ -43,6 +45,8 @@
       "admin_selectUser_Modal_title": "Signalement de l'utilisateur",
       "admin_selectUser_Modal_noReport": "Aucun signalement",
       "button_close": "Fermer",
+      "admin_selectUser_Message_noInternet": "vous avez besoin d'être connecté à Internet pour supprimer un signalement",
+
   
       "admin_stats_title": "Statistiques de signalement",
   
@@ -57,7 +61,7 @@
       "saisieCode_button_report": "Signaler",
       "saisieCode_report_title": "Signaler un problème",
       "saisieCode_error_cip": "Code CIP invalide",
-      "saisieCode_alert_title1": "Informations sur le médicament",
+      "saisieCode_alert_title1": "Information sur le médicament",
       "saisieCode_button_cancel": "Annuler",
       "saisieCode_alert_title2": "Signalement",
       "saisieCode_alert_message": "Votre signalement a été envoyé",
@@ -76,6 +80,8 @@
       "qrcode_help": "Aide",
       "qrcode_help_text": "Scannez vos médicaments à l'aide de la caméra pour obtenir le code CIP",
       "qrcode_report_title": "Signaler un problème",
+      "qrcode_alert_detail": "Détail du médicament",
+
   
       "error": "Erreur",
       "cancel": "Annuler"

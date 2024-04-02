@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const initializeI18next = async () => {
-    const lang = await AsyncStorage.getItem('lang') || 'fr'; // Obtenez la langue depuis AsyncStorage, ou utilisez 'fr' par défaut
+    const lang = (await AsyncStorage.getItem('lang')) ?? 'fr';
     await i18next
       .use(initReactI18next)
       .init({

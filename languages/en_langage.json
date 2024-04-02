@@ -38,6 +38,8 @@
         "admin_selectUser_title": "User list",
         "admin_selectUser_default": "Select a user",
         "admin_selectUser_search": "Search",
+        "admin_selectUser_Message_delete": "Delete report",
+        
 
 
         "admin_selectUser_Message_medicament": "Medication",
@@ -47,6 +49,7 @@
         "admin_selectUser_Modal_title": "User reporting",
         "admin_selectUser_Modal_noReport": "No report",
         "button_close": "Close",
+        "admin_selectUser_Message_noInternet": "you need to be connected to the Internet to delete a report",
 
         "admin_stats_title": "Reporting statistics",
 
@@ -84,6 +87,7 @@
         "qrcode_help": "Help",
         "qrcode_help_text": "Scan your medications using the camera to get the CIP code",
         "qrcode_report_title": "Report a problem",
+        "qrcode_alert_detail": "Details of the medicine",
 
 
 

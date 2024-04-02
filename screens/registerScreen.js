@@ -92,7 +92,7 @@ const RegisterScreen = () => {
                 />
                 <Button
                     mode="contained"
-                    style={{ margin: 10 }}
+                    style={{ margin: 10, backgroundColor: "#8EC641" }}
                     onPress={handleRegister}>
                     {t('login_registerbtn')}
                 </Button>

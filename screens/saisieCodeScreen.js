@@ -50,6 +50,16 @@ const SaisieCodeScreen = () => {
     return null;
   };
   
+  const extraireDetaille= (value) => {
+    const newdata = data["medic"];
+    for (let i = 0; i < newdata.length; i++) {
+      if (value == newdata[i].cip13) {
+        console.log(newdata[i]);
+        return newdata[i]['Libellé_atc_2'].toLowerCase();
+      }
+    }
+    return t('qrcode_inconnumedicament');
+  }
   
   const checkmedic = (value) => {
     const CipCode = parseInt(value,10);
@@ -60,16 +70,18 @@ const SaisieCodeScreen = () => {
     }
   
     const medicname = extraireNom(CipCode);
-  
+    const medicdetaille = extraireDetaille(CipCode);
     if (!medicname) {
       Alert.alert(t('error'), t('saisieCode_error_cip'));
       return;
     }
   
-    setMedicData({ cip: CipCode, name: medicname });
+    setMedicData({ cip: CipCode, name: medicname, detaille: medicdetaille});
     Alert.alert(
       t('saisieCode_alert_title1'),
-      `\n${t('saisieCode_medicname')}: `+medicname
+      ` Code CIP : `+CipCode+
+      `\n\n${t('saisieCode_medicname')}: `+medicname
+      +`\n\n${t('qrcode_alert_detail')}:\n `+medicdetaille
       ,
       [
         {
@@ -78,7 +90,7 @@ const SaisieCodeScreen = () => {
         },
         {
           text: t('saisieCode_button_cancel'),
-          onPress: () => setCipValue(),
+          onPress: () => setCipValue(''),
         },
       ],
       { cancelable: false }
@@ -192,7 +204,7 @@ const SaisieCodeScreen = () => {
           <Button
             mode="contained"
             onPress={() => checkmedic(cipValue)}
-            style={styles.button}
+            style={[styles.button, {backgroundColor: "#8EC641"}]}
           >
             {t('saisieCode_button_validate')}
           </Button>
@@ -205,7 +217,7 @@ const SaisieCodeScreen = () => {
         <Button
           mode="contained"
           onPress={() => showHelpModal()}
-          style={styles.btnHelp}
+          style={[styles.btnHelp,{backgroundColor: "#8EC641"}]}
         >
           {t('saisieCode_button_help')}
         </Button>
@@ -227,7 +239,7 @@ const SaisieCodeScreen = () => {
             <Button
               mode="contained"
               onPress={() => hideHelpModal()}
-              style={[styles.btnHelp, {marginBottom: -16,marginTop: 30}]}
+              style={[styles.btnHelp, {marginBottom: -16,marginTop: 30, backgroundColor: "#8EC641"}]}
             >
               {t('button_close')}
             </Button>
@@ -246,13 +258,15 @@ const SaisieCodeScreen = () => {
 
               <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
               <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip.toString()} />
+              <Text style={{ marginTop: 240,paddingRight:110, fontSize: 13, position: 'absolute' }}> {t('qrcode_alert_detail')} :</Text>
+              <TextInput Label='' style={{ width: '100%', padding: 5, margin: 15 }} multiline={true} numberOfLines={4} disabled={true} value={medicData?.detaille} />
               <TextInput label={t('saisieCode_problem')} style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
 
 
-            <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30 }]} disabled={isReportButtonClicked}>
+            <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30, backgroundColor: "#8EC641" }]} disabled={isReportButtonClicked}>
               {t('saisieCode_button_report')}
             </Button>
-            <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#606060"}]}>
+            <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#8EC641"}]}>
               {t('button_close')}
             </Button>
           </View>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Camera, FlashMode } from 'expo-camera';
-import { View, Image, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid,TouchableWithoutFeedback,Keyboard } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Platform, PermissionsAndroid ,TouchableWithoutFeedback,Keyboard } from 'react-native';
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import { BarCodeScanner, BarCodeScannerConstants } from 'expo-barcode-scanner';
 import { Alert } from 'react-native';
@@ -38,19 +38,10 @@ const QrCodeScreen = () => {
 
     if (Platform.OS === 'android') {
 
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        {
-          title: t('camera_permission_title'),
-          message: t('camera_permission_message'),
-          buttonNeutral: t("ask_me_later"),
-          buttonNegative: t('cancel'),
-          buttonPositive: 'OK',
-        },
-      );
-
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
       setHasPermission(granted === PermissionsAndroid.RESULTS.GRANTED);
       return granted === PermissionsAndroid.RESULTS.GRANTED;
+      
     } else if (Platform.OS === 'ios') {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
@@ -67,14 +58,26 @@ const QrCodeScreen = () => {
   };
 
   const extraireCIP = (value) => {
-    return value.slice(3, 16);
+    return Platform.OS === 'ios' ? value.slice(3, 16) : value.slice(4, 17);
   }
 
   const extraireNom = (value) => {
     const newdata = data["medic"];
     for (let i = 0; i < newdata.length; i++) {
       if (value == newdata[i].cip13) {
+        console.log(newdata[i]);
         return newdata[i].produit.toLowerCase();
+      }
+    }
+    return t('qrcode_inconnumedicament');
+  }
+
+  const extraireDetaille= (value) => {
+    const newdata = data["medic"];
+    for (let i = 0; i < newdata.length; i++) {
+      if (value == newdata[i].cip13) {
+        console.log(newdata[i]);
+        return newdata[i]['Libellé_atc_2'].toLowerCase();
       }
     }
     return t('qrcode_inconnumedicament');
@@ -82,18 +85,22 @@ const QrCodeScreen = () => {
 
   const handleBarCodeScanned = ({ data }) => {
     if (data) {
+      console.log(data);
       setScannedData(data);
       const cip = extraireCIP(data);
+      console.log(cip);
       const name = extraireNom(cip);
-      setMedicData({ cip, name });
+      const libelle_atc_2 = extraireDetaille(cip);
+      setMedicData({ cip, name, libelle_atc_2});
       Alert.alert(
         t('qrcode_alert_title1'),
         `${t('qrcode_alert_codecip')}: ${cip}`+
-        `\n${t('saisieCode_medicname')}: ${name}`
+        `\n\n${t('saisieCode_medicname')}: ${name}`+
+        `\n\n${t('qrcode_alert_detail')} : \n${libelle_atc_2}`
         ,
         [
           {
-            text: t('saisieCode_alert_title2'),
+            text: t('saisieCode_button_report'),
             onPress:showReportModal,
           },
           {
@@ -226,6 +233,7 @@ const QrCodeScreen = () => {
             <Button
               mode="contained"
               onPress={() => setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}
+              style={{ backgroundColor: "#8EC641" }}
             >
               {t('qrcode_switch_camera')}
             </Button>
@@ -237,7 +245,7 @@ const QrCodeScreen = () => {
       <View style={styles.container}>
         <Image style={{ width: 150, height: 150 }} source={require('../assets/images/qr_code_exemple.png')} />
 
-        <Button mode="contained"onPress={toggleCamera} >
+        <Button mode="contained"onPress={toggleCamera} style={{ marginTop: 15, backgroundColor: "#8EC641" }}>
           {isCameraOpen ? t('qrcode_stopscan') : t('qrcode_scan')}
         </Button>
 
@@ -245,7 +253,7 @@ const QrCodeScreen = () => {
 
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
 
-        <Button mode="contained" onPress={() => showHelpModal()} style={styles.btnHelp} >
+        <Button mode="contained" onPress={() => showHelpModal()} style={[styles.btnHelp,{backgroundColor: "#8EC641"}]} >
           {t('qrcode_help')}
         </Button>
 
@@ -267,7 +275,7 @@ const QrCodeScreen = () => {
             <Button
               mode="contained"
               onPress={() => hideHelpModal()}
-              style={[styles.btnHelp, { marginBottom: -16, marginTop: 30 }]}
+              style={[styles.btnHelp, { marginBottom: -16, marginTop: 30, backgroundColor: "#8EC641" }]}
             >
               {t('button_close')}
             </Button>
@@ -286,13 +294,15 @@ const QrCodeScreen = () => {
 
               <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
               <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip} />
+              <Text style={{ marginTop: 240,paddingRight:110, fontSize: 13, position: 'absolute' }}> {t('qrcode_alert_detail')} :</Text>
+              <TextInput Label='' style={{ width: '100%', padding: 5, margin: 15 }} multiline={true} numberOfLines={4} disabled={true} value={medicData?.libelle_atc_2} />
               <TextInput label={t('saisieCode_problem')} style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
 
 
-            <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30 }]} disabled={isReportButtonClicked}>
+            <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30, backgroundColor: "#8EC641" }]} disabled={isReportButtonClicked}>
               {t('saisieCode_button_report')}
             </Button>
-            <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#606060"}]}>
+            <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#8EC641"}]}>
               {t('button_close')}
             </Button>
           </View>
