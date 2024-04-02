@@ -3,14 +3,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import profilScreen from './qrCodeScreen';
 import { Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import 'intl-pluralrules';
 
 const HomeScreen = ({navigation}) => {
     return (
       <View>
-        {/* <Text style={styles.text}>Bienvenue sur ScanMyMeds !</Text> */}
+        <Text style={styles.text}>Bienvenue sur ScanMyMeds !</Text>
 
-<Button title="logout" onPress={() => AsyncStorage.removeItem("loggedInUserUuid")} >
-</Button>
       </View>
     );
   };

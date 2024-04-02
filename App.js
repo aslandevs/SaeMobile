@@ -1,5 +1,5 @@
 import React, { useContext,useState, useEffect} from 'react';
-import { StatusBar} from 'react-native';
+import { StatusBar, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -12,18 +12,24 @@ import LoginScreen from './screens/loginScreen';
 import RegisterScreen from './screens/registerScreen';
 import MesReportScreen from './screens/mesreportScreen';
 import AdminScreen from './screens/adminScreen';
+import ProfilScreen from './screens/profilScreen';
+import LogoutScreen from './screens/logoutScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getDocs, query, collection, onSnapshot} from 'firebase/firestore';
 import db from './db/firestore';
 import NetInfo from "@react-native-community/netinfo";
+import i18n from './languages/i18n';
+import { useTranslation } from 'react-i18next';
+import 'intl-pluralrules';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const MainTab = ({autorole, autoemail}) => {
+const MainTab = ({autorole, autoemail, trans }) => {
   const { role, setRole, email, setEmail  } = useContext(AuthContext);
+
 
   useEffect(() => {
     
@@ -36,16 +42,24 @@ const MainTab = ({autorole, autoemail}) => {
   }, [role, email]);
 
   return (
-    <Tab.Navigator initialRouteName="Accueil">
+    <Tab.Navigator initialRouteName="Accueil" 
+    
+      screenOptions={{ 
+    tabBarActiveTintColor: 'tomato', 
+    tabBarInactiveTintColor: 'gray',
+    tabBarStyle: {
+      display: 'flex'
+    }
+  }}>
       <Tab.Screen 
-        name="QR_CODE" 
+        name="DataMatrix" 
         component={QrCodeScreen}
         options={{
-          title: 'QR CODE',
-          tabBarLabel: 'QR CODE',
+          title: 'DataMatrix',
+          tabBarLabel: 'DataMatrix',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
-              name={'qr-code-outline'} 
+              name={'qr-code'}
               size={size} 
               color={color} 
             />
@@ -57,8 +71,8 @@ const MainTab = ({autorole, autoemail}) => {
         name="SaisieCode" 
         component={SaisieCodeScreen}
         options={{
-          title: 'Saisir le Code',
-          tabBarLabel: 'Saisir le Code',
+          title: trans('app_SaisieCode'),
+          tabBarLabel: trans('app_SaisieCode'),
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
               name={'barcode'} 
@@ -70,28 +84,14 @@ const MainTab = ({autorole, autoemail}) => {
       />
       
       <Tab.Screen 
-        name="Accueil" 
-        component={HomeScreen} 
-        options={{
-          tabBarLabel: 'Accueil',
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons 
-              name={'home'} 
-              size={size} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      
-      <Tab.Screen 
         name="Mes signalements" 
         component={MesReportScreen}
         options={{
-          tabBarLabel: 'Signalements',
+          title: trans('app_Signalement_title'),
+          tabBarLabel: trans('app_Signalement'),
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
-              name={'help'} 
+              name={'document-text'} 
               size={size} 
               color={color} 
             />
@@ -102,6 +102,23 @@ const MainTab = ({autorole, autoemail}) => {
           },
         }} 
       />
+
+      <Tab.Screen 
+        name="Accueil"
+        component={HomeScreen} 
+        options={{
+          title: trans('app_Accueil'),
+          tabBarLabel: trans('app_Accueil'),
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons 
+              name={'home'} 
+              size={size} 
+              color={color} 
+            />
+          ),
+        }}
+      />
+      
 
       {role === 'admin' && (
         <Tab.Screen 
@@ -119,12 +136,28 @@ const MainTab = ({autorole, autoemail}) => {
           }} 
         />
       )}
+
+      <Tab.Screen
+        name= {trans('app_Profil')}
+        component={ProfilScreen}
+        options={() => ({
+          tabBarLabel: trans('app_Profil'),
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={'person'}
+              size={size}
+              color={color}
+            />
+          ),
+        })}
+      />
+
       
       <Tab.Screen 
-        name="À propos" 
+        name= {trans('app_About')} 
         component={aboutScreen}
         options={{
-          tabBarLabel: 'À propos',
+          tabBarLabel: trans('app_About'),
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons 
               name={'help-circle'} 
@@ -140,10 +173,16 @@ const MainTab = ({autorole, autoemail}) => {
 
 
 
-function App() {
+const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [autorole, setRole] = useState('user');
   const [autoemail, setEmail] = useState('');
+  const { t } = useTranslation();
+
+  const handleLogout = () => {
+    AsyncStorage.removeItem("loggedInUserUuid");
+    setIsLoggedIn(false);
+};
 
 
   
@@ -192,27 +231,33 @@ function App() {
     });
   });
   
-  return (
-    <AuthProvider>
-      <SafeAreaProvider>
-        <StatusBar barStyle='default' />
-        <NavigationContainer>
-          <Stack.Navigator>
-            {isLoggedIn ? (
-              <Stack.Screen name="MainTab" options={{ headerShown: false }}>
-                {props => <MainTab {...props} autorole={autorole} autoemail={autoemail} />}
-              </Stack.Screen>
-            ) : (
-              <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login'}}>
-                {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
-              </Stack.Screen>
-            )}
-            <Stack.Screen name="Register" component={RegisterScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaProvider>
-    </AuthProvider>
-  );
+  
+    return (
+        <AuthProvider>
+            <SafeAreaProvider>
+                <StatusBar barStyle='default' />
+                <NavigationContainer>
+                    <Stack.Navigator>
+                        {isLoggedIn ? (
+                            <>
+                                <Stack.Screen name="MainTab" options={{ headerShown: false }}>
+                                  {props => <MainTab {...props} autorole={autorole} autoemail={autoemail} trans={t}/>}
+                                </Stack.Screen>
+                                <Stack.Screen name="Logout" options={{ headerShown: false }}>
+                                    {props => <LogoutScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+                                </Stack.Screen>
+                            </>
+                        ) : (
+                            <Stack.Screen name="Login" options={{ headerShown: true, title: 'Login' }}>
+                                {props => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+                            </Stack.Screen>
+                        )}
+                        <Stack.Screen name="Register" component={RegisterScreen} />
+                    </Stack.Navigator>
+                </NavigationContainer>
+            </SafeAreaProvider>
+        </AuthProvider>
+    );
 }
 
 export default App;

@@ -1,0 +1,84 @@
+{
+    "translation": {
+      "app_SaisieCode": "Entrer le code",
+      "app_Signalement_title": "Mon signalement",
+      "app_Signalement": "Signalement",
+      "app_Accueil": "Accueil",
+      "app_Profil": "Profil",
+      "app_About": "À propos",
+  
+      "password": "Mot de passe",
+      "password_confirm": "Confirmer le mot de passe",
+  
+      "login_fillAllFields": "Veuillez remplir tous les champs",
+      "login_success": "Vous êtes maintenant connecté",
+      "login_incorrectCredentials": "Identifiants incorrects",
+      "login_loginbtn": "Connexion",
+      "login_registerbtn": "S'inscrire",
+  
+      "register_fillAllFields": "Veuillez remplir tous les champs",
+      "register_invalidEmail": "Email invalide",
+      "register_passwordLength": "Le mot de passe doit comporter au moins 6 caractères",
+      "register_success": "Vous êtes maintenant inscrit",
+      "register_error": "Erreur lors de la création de l'utilisateur",
+      "register_passwordMatch": "Les mots de passe ne correspondent pas",
+  
+      "about_message": "Développé par",
+  
+      "profile_logout": "Déconnexion",
+      "profile_selectLanguage": "Sélectionnez une langue",
+      "profile_french": "Français",
+      "profile_english": "Anglais",
+  
+      "admin_title": "Options administrateur",
+      "admin_selectUser": "Ouvrir la liste des utilisateurs",
+      "admin_graphique": "Ouvrir le graphique",
+      "admin_selectUser_title": "Liste des utilisateurs",
+      "admin_selectUser_default": "Sélectionnez un utilisateur",
+      "admin_selectUser_search": "Rechercher",
+  
+      "admin_selectUser_Message_medicament": "Médicament",
+      "admin_selectUser_Message_Date": "Date",
+  
+      "admin_selectUser_Modal_title": "Signalement de l'utilisateur",
+      "admin_selectUser_Modal_noReport": "Aucun signalement",
+      "button_close": "Fermer",
+  
+      "admin_stats_title": "Statistiques de signalement",
+  
+      "report_syncSuccess": "Vos données locales sont en cours de synchronisation avec la base de données",
+  
+      "saisieCode_button_validate": "Valider",
+      "saisieCode_placeholder_cip": "Entrez le code CIP du médicament",
+      "saisieCode_button_help": "Aide",
+      "saisieCode_help_text": "Le code CIP est un identifiant unique pour un médicament. Il se trouve généralement sur l'emballage du médicament. Il est composé de 13 chiffres.",
+      "saisieCode_medicname": "Nom du médicament",
+      "saisieCode_problem": "Description du problème",
+      "saisieCode_button_report": "Signaler",
+      "saisieCode_report_title": "Signaler un problème",
+      "saisieCode_error_cip": "Code CIP invalide",
+      "saisieCode_alert_title1": "Informations sur le médicament",
+      "saisieCode_button_cancel": "Annuler",
+      "saisieCode_alert_title2": "Signalement",
+      "saisieCode_alert_message": "Votre signalement a été envoyé",
+      "saisieCode_alert_message_error": "Une erreur s'est produite lors de l'envoi du signalement",
+  
+      "camera_permission_title": "Permission d'accès à la caméra",
+      "camera_permission_message": "L'application a besoin d'accéder à la caméra pour scanner le code CIP du médicament",
+      "ask_me_later": "Demander plus tard",
+  
+      "qrcode_inconnumedicament": "Médicament inconnu",
+      "qrcode_alert_title1": "Scanner DataMatrix",
+      "qrcode_alert_codecip": "Le code CIP est",
+      "qrcode_switch_camera": "Changer de caméra",
+      "qrcode_stopscan": "Ne plus scanner le DataMatrix",
+      "qrcode_scan": "Scanner le DataMatrix",
+      "qrcode_help": "Aide",
+      "qrcode_help_text": "Scannez vos médicaments à l'aide de la caméra pour obtenir le code CIP",
+      "qrcode_report_title": "Signaler un problème",
+  
+      "error": "Erreur",
+      "cancel": "Annuler"
+    }
+  }
+  

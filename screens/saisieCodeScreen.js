@@ -8,7 +8,9 @@ import db from '../db/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
 import { fetchReports } from './mesreportScreen';
-
+import 'intl-pluralrules';
+import { useTranslation } from 'react-i18next';
+import { t } from 'i18next';
 
 const SaisieCodeScreen = () => {
   const [visible, setVisible] = useState(false);
@@ -18,6 +20,7 @@ const SaisieCodeScreen = () => {
   const [medicData, setMedicData] = useState(null);
   const [message, setMessage] = useState('');
   const {email, setReport} = useContext(AuthContext);
+  const { t } = useTranslation();
 
 
   const showHelpModal = () => setVisible(true);
@@ -41,7 +44,7 @@ const SaisieCodeScreen = () => {
 
     for (let i = 0; i < newdata.length; i++) {
       if (value == newdata[i].cip13) {
-        return newdata[i].produit;
+        return newdata[i].produit.toLowerCase();
       }
     }
     return null;
@@ -52,29 +55,29 @@ const SaisieCodeScreen = () => {
     const CipCode = parseInt(value,10);
   
     if (!CipCode) { 
-      Alert.alert('Erreur', "Champ vide");
+      Alert.alert(t('error'), t('saisieCode_error_cip'));
       return;
     }
   
     const medicname = extraireNom(CipCode);
   
     if (!medicname) {
-      Alert.alert('Erreur', 'Code CIP invalide');
+      Alert.alert(t('error'), t('saisieCode_error_cip'));
       return;
     }
   
     setMedicData({ cip: CipCode, name: medicname });
     Alert.alert(
-      'Information sur le médicament',
-      `\nNom du médicament: `+medicname
+      t('saisieCode_alert_title1'),
+      `\n${t('saisieCode_medicname')}: `+medicname
       ,
       [
         {
-          text: 'Report',
+          text: t('saisieCode_button_report'),
           onPress:showReportModal,
         },
         {
-          text: 'Annuler',
+          text: t('saisieCode_button_cancel'),
           onPress: () => setCipValue(),
         },
       ],
@@ -118,8 +121,8 @@ const SaisieCodeScreen = () => {
           hideReportModal();
           setCipValue('');
           Alert.alert(
-            'Signalement',
-            'Votre signalement a été enregistré localement',
+            t('saisieCode_alert_title2'),
+            t('saisieCode_alert_message'),
             [
               {
                 text: 'OK',
@@ -144,8 +147,8 @@ const SaisieCodeScreen = () => {
         hideReportModal();
         setCipValue('');
         Alert.alert(
-          'Signalement',
-          'Votre signalement a été envoyé avec succès',
+          t('saisieCode_alert_title2'),
+          t('saisieCode_alert_message'),
           [
             {
               text: 'OK',
@@ -158,8 +161,8 @@ const SaisieCodeScreen = () => {
         console.error(error);
         setIsReportButtonClicked(false);
         Alert.alert(
-          'Signalement',
-          'Erreur lors de l\'envoi du signalement',
+          t('saisieCode_alert_title2'),
+          t('saisieCode_alert_message_error'),
           [
             {
               text: 'OK',
@@ -179,7 +182,7 @@ const SaisieCodeScreen = () => {
           <TextInput
             mode="outlined"
             label="Code CIP"
-            placeholder="Entrer le code CIP du médicament"
+            placeholder={t('saisieCode_placeholder_cip')}
             style={{width: 300, marginBottom: 20}}
             value={cipValue}
             onChangeText={text => setCipValue(text)}
@@ -191,7 +194,7 @@ const SaisieCodeScreen = () => {
             onPress={() => checkmedic(cipValue)}
             style={styles.button}
           >
-            Valider
+            {t('saisieCode_button_validate')}
           </Button>
 
         </View>
@@ -204,7 +207,7 @@ const SaisieCodeScreen = () => {
           onPress={() => showHelpModal()}
           style={styles.btnHelp}
         >
-          Aide
+          {t('saisieCode_button_help')}
         </Button>
 
       </View>
@@ -218,7 +221,7 @@ const SaisieCodeScreen = () => {
             <Text
               style={styles.textHelp}
             >
-            Le code CIP ou Code Identifiant de Présentation est un code numérique à 7 ou 13 chiffres qui permet d'identifier une présentation (ou encore conditionnement) d'un médicament.
+              {t('saisieCode_help_text')}
             </Text>
 
             <Button
@@ -226,7 +229,7 @@ const SaisieCodeScreen = () => {
               onPress={() => hideHelpModal()}
               style={[styles.btnHelp, {marginBottom: -16,marginTop: 30}]}
             >
-              Fermer
+              {t('button_close')}
             </Button>
           </View>
         </Modal>
@@ -238,19 +241,19 @@ const SaisieCodeScreen = () => {
 
           <View style={styles.modalView}>
             <Text style={{ textAlign: 'center', fontSize: 20, marginBottom: 20 }}>
-              Signaler un problème
+              {t('saisieCode_report_title')}
             </Text>
 
-              <TextInput label="Nom du médicament" style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
+              <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
               <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip.toString()} />
-              <TextInput label="Description du problème" style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
+              <TextInput label={t('saisieCode_problem')} style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
 
 
             <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30 }]} disabled={isReportButtonClicked}>
-              Signaler
+              {t('saisieCode_button_report')}
             </Button>
             <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#606060"}]}>
-              Fermer
+              {t('button_close')}
             </Button>
           </View>
           </TouchableWithoutFeedback>

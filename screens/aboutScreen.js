@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native'; // Importez Dimensions
 import { Text } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 
 function AboutScreen() {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <View style={styles.box}>
@@ -10,7 +12,7 @@ function AboutScreen() {
             Version : 1.0
         </Text>
         <Text style={styles.text}>
-            Développé par :{'\n'}AbdulHakim{'\n'}Christophe{'\n'}Laksan{'\n'}Yohann
+            {t("about_message")} :{'\n'}AbdulHakim{'\n'}Christophe{'\n'}Laksan{'\n'}Yohann
         </Text>
       </View>
     </View>

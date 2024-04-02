@@ -6,11 +6,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import db from '../db/firestore';
 import NetInfo from "@react-native-community/netinfo";
 import { useFocusEffect } from '@react-navigation/native';
-
+import { useTranslation } from 'react-i18next';
+import 'intl-pluralrules';
 
 export const fetchReports = async ({email, setReport}) => {
   const isConnected = await NetInfo.fetch().then(state => state.isConnected);
-
+  
   if (!isConnected) {
     AsyncStorage.getItem('reports').then((localReports) => {
       if (localReports !== null) {
@@ -35,7 +36,7 @@ export const fetchReports = async ({email, setReport}) => {
 };
 
 
-const synchronizeReports = async () => {
+const synchronizeReports = async ({t}) => {
     const localReports = await AsyncStorage.getItem('reports');
     if (localReports) {
       const reportsArray = JSON.parse(localReports);
@@ -47,7 +48,7 @@ const synchronizeReports = async () => {
           await Promise.all(promises);
   
           await AsyncStorage.removeItem('reports');
-          alert('Votre données local sont entrain d\'être synchronisé avec la base de données');
+          alert(t('report_syncSuccess'));
         } catch (error) {
           console.error('Erreur lors de la synchronisation des reports:', error);
         }
@@ -61,14 +62,15 @@ const synchronizeReports = async () => {
 
 const MesReportScreen = () => {
   const { email, report, setReport } = useContext(AuthContext);
+  const { t } = useTranslation();
 
   const loadDataAndSynchronize = async () => {
     const isConnected = await NetInfo.fetch().then(state => state.isConnected);
     if (isConnected) {
-      await synchronizeReports();
-      fetchReports({ email, setReport });
+      await synchronizeReports({t});
+      fetchReports({ email, setReport});
     } else {
-      fetchReports({ email, setReport });
+      fetchReports({ email, setReport});
     }
   };
 
@@ -108,9 +110,9 @@ const MesReportScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.content}>
             <Text style={styles.text}>CIP: {item.cip}</Text>
-            <Text style={styles.text}>Médicament: {item.medicament}</Text>
+            <Text style={styles.text}>{t('admin_selectUser_Message_medicament')}: {item.medicament}</Text>
             <Text style={styles.text}>Message: {item.message}</Text>
-            <Text style={styles.text}>Date: {item.date}</Text>
+            <Text style={styles.text}>{t('admin_selectUser_Message_Date')}: {item.date}</Text>
           </View>
         )}
       />

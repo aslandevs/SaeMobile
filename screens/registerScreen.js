@@ -4,7 +4,8 @@ import { Button, TextInput, Provider } from 'react-native-paper';
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import db from '../db/firestore';
-
+import { useTranslation } from 'react-i18next';
+import 'intl-pluralrules';
 
 
 
@@ -13,6 +14,7 @@ const RegisterScreen = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('user');
+    const { t } = useTranslation();
 
     const navigation = useNavigation();
 
@@ -26,17 +28,17 @@ const RegisterScreen = () => {
       
     const handleRegister = () => {
         if (!email || !password || !confirmPassword) {
-            alert('Veuillez remplir tous les champs');
+            alert(t('register_fillAllFields'));
             return;
         }
 
         if (!email.includes('@')) {
-            alert('Email invalide');
+            alert(t('register_invalidEmail'));
             return;
         }
 
         if (password.length < 6) {
-            alert('Le mot de passe doit contenir au moins 6 caractÃ¨res');
+            alert(t('register_passwordLength'));
             return;
         }
         
@@ -48,15 +50,15 @@ const RegisterScreen = () => {
                 password: password,
                 role: role,
             }).then(() => {
-                    alert('Utilisateur cree avec succes');
+                    alert(t('register_success'));
                     navigation.navigate('Login');
             }).catch(error => {
-                    alert('Erreur lors de la crÃ©ation de l\'utilisateur');
+                    alert(t('register_error'));
                     console.error(error);
             });
             
         } else {
-            alert('Les deux mots de passe ne sont pas identiques')
+            alert(t('register_passwordMatch'));
         }
     };
 
@@ -73,16 +75,16 @@ const RegisterScreen = () => {
                     onChangeText={text => setEmail(text)}
                 />
                 <TextInput
-                    label="Password"
-                    placeholder="Password"
+                    label= {t('password')}
+                    placeholder= {t('password')}
                     secureTextEntry
                     style={{ margin: 10 }}
                     value={password}
                     onChangeText={text => setPassword(text)}
                 />
                 <TextInput
-                    label="Confirm Password"
-                    placeholder="Confirm Password"
+                    label= {t('password_confirm')}
+                    placeholder= {t('password_confirm')}
                     secureTextEntry
                     style={{ margin: 10 }}
                     value={confirmPassword}
@@ -92,7 +94,7 @@ const RegisterScreen = () => {
                     mode="contained"
                     style={{ margin: 10 }}
                     onPress={handleRegister}>
-                    Register
+                    {t('login_registerbtn')}
                 </Button>
             </View>
             </View>

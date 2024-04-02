@@ -7,14 +7,16 @@ import db from '../db/firestore';
 import { AuthContext } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
-
+import { useTranslation } from 'react-i18next';
+import 'intl-pluralrules';
 
 const LoginScreen = ({setIsLoggedIn}) => {
     const [email, setEmailLogin] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
     const {setRole, setEmail } = useContext(AuthContext);
-
+    const { t } = useTranslation();
+    let userFound = false;
 
     const generateUUID = () => {
         const currentDate = new Date().getTime().toString(36);
@@ -25,7 +27,7 @@ const LoginScreen = ({setIsLoggedIn}) => {
     const handleLogin = async () => {
 
         if (!email || !password) {
-            alert('Veuillez remplir tous les champs');
+            alert(t('login_fillAllFields'));
             return;
         }
 
@@ -44,6 +46,7 @@ const LoginScreen = ({setIsLoggedIn}) => {
             getDocs(query(collection(db, 'user'))).then((snapshot) => {
                 snapshot.forEach((doc) => {
                     if (doc.data().email === email && doc.data().password === password) {
+                        userFound = true;
                         setRole(doc.data().role);
                         setEmail(doc.data().email);
                         let userUuid = doc.data().uuid;
@@ -56,12 +59,15 @@ const LoginScreen = ({setIsLoggedIn}) => {
                         setIsLoggedIn(true);
                         AsyncStorage.setItem('loggedInUserUuid', userUuid);
                         AsyncStorage.setItem('userCredentials', JSON.stringify({email: doc.data().email, role: doc.data().role}));
+                        alert(t('login_success'));
                         console.log('Login success');
-                    } else {
-                        console.log('Identifiants incorrects');
+                        
                     }
-
                 });
+                if (!userFound) {
+                    console.log('Identifiants incorrects');
+                    alert(t('login_incorrectCredentials'));
+                }
             }).catch((error) => {
                 console.log('Error getting documents: ', error);
             }
@@ -97,14 +103,14 @@ const LoginScreen = ({setIsLoggedIn}) => {
                     mode="contained"
                     style={{ margin: 10 }}
                     onPress={handleLogin}>
-                    Login
+                    {t('login_loginbtn')}
                 </Button>
 
                 <Button
                     mode="outlined"
                     style={{ margin: 10 }}
                     onPress={handleRegister}>
-                    Register
+                    {t('login_registerbtn')}
                 </Button>
             </View>
         </Provider>

@@ -20,6 +20,8 @@ import db from '../db/firestore'; // Assurez-vous d'importer votre configuration
 import { Modal, Portal, Button, TextInput, Provider, Text } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
+import { useTranslation } from 'react-i18next';
+import 'intl-pluralrules';
 
 // Register extensions
 echarts.use([
@@ -62,29 +64,23 @@ function ChartComponent({ option }) {
 
 
 const generateChartData = (AdminReports) => {
-    // Initialiser un Map pour stocker le nombre de rapports par médicament
     const reportCounts = new Map();
   
-    // Parcourir tous les rapports
     AdminReports.forEach((AdminReports) => {
       const { medicament} = AdminReports;
-      const upperCaseMedicament = medicament.toLowerCase(); // Convertir en majuscules
+      const upperCaseMedicament = medicament.toLowerCase(); 
       
-      // Si le médicament existe déjà dans le Map, incrémentez le compteur
       if (reportCounts.has(upperCaseMedicament)) {
         reportCounts.set(upperCaseMedicament, reportCounts.get(upperCaseMedicament) + 1);
       } else {
-        // Sinon, initialisez le compteur à 1
         reportCounts.set(upperCaseMedicament, 1);
       }
     });
   
-    // Convertir les données en un format compatible avec le graphique
     const data = Array.from(reportCounts.entries()).map(([name, value]) => ({
       name,
       value,
     }));
-    //console.log('name', data);
     return data;
 };
   
@@ -99,6 +95,7 @@ const AdminScreen = () => {
     const [isUserReportOpen, setIsUserReportOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
+    const { t } = useTranslation();
     
     useEffect(() => {
 
@@ -184,7 +181,7 @@ const AdminScreen = () => {
     return (
         <Provider>
             <View>
-                <Text style={styles.title}> Options de l'administrateur</Text>
+                <Text style={styles.title}> {t('admin_title')} </Text>
 
                 <View style={{ flexDirection: 'column', justifyContent: 'space-around', marginVertical: 20 }}>
                     <Button 
@@ -192,14 +189,14 @@ const AdminScreen = () => {
                         onPress={() => setIsDropdownOpen(true)}
                         style={{ marginBottom: 10, width: 300, alignSelf: 'center' }}
                     >
-                        Ouvrir la list des utilisateurs
+                        {t('admin_selectUser')}
                     </Button>
                     <Button
                         mode="contained"
                         onPress={() => setIsGraphModalOpen(true)}
                         style={{ marginBottom: 10, width: 300, alignSelf: 'center' }}
                     >
-                        Ouvrir le graphique
+                        {t('admin_graphique')}
                     </Button>
                 </View>
             </View>
@@ -207,7 +204,7 @@ const AdminScreen = () => {
             <Portal>
               <Modal visible={isDropdownOpen} onDismiss={() => setIsDropdownOpen(false)}>
                 <View style={styles.modalView}>
-                <Text style={{ fontSize: 19, fontWeight: 'bold', marginBottom: 20 }}>Liste des utilisateurs</Text>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', marginBottom: 20 }}>{t('admin_selectUser_title')}</Text>
                 <Dropdown
                     style={[styles.dropdown, isDropdownOpen && { borderColor: 'blue' }]}
                     data={users.map((user) => ({
@@ -218,8 +215,8 @@ const AdminScreen = () => {
                     maxHeight={300}
                     labelField="label"
                     valueField="value"
-                    placeholder={!isDropdownOpen ? 'Select item' : '...'}
-                    searchPlaceholder="Search..."
+                    placeholder={!isDropdownOpen ? 'Select item' : t('admin_selectUser_default')}
+                    searchPlaceholder= {t('admin_selectUser_search')}
                     value={value}
                     onFocus={() => setIsDropdownOpen(true)}
                     onBlur={() => setIsDropdownOpen(false)}
@@ -243,11 +240,11 @@ const AdminScreen = () => {
               <Portal>
                 <Modal visible={isUserReportOpen} onDismiss={() => setIsUserReportOpen(false)}>
                     <View style={{ ...styles.modalView, justifyContent: 'center', alignItems: 'center',height: '100%', }}>
-                        <Text style={{ fontSize: 19, fontWeight: 'bold', marginBottom: 20 }}>Signalement de l'utilisateur</Text>
+                        <Text style={{ fontSize: 19, fontWeight: 'bold', marginBottom: 20 }}>{t('admin_selectUser_Modal_title')}</Text>
                         
                         {
                             AdminReports.filter((report) => report.email === value).length === 0 ? (
-                                <Text style={{ fontSize: 16, marginBottom: 10 }}>Aucun signalement trouvé</Text>
+                                <Text style={{ fontSize: 16, marginBottom: 10 }}>{t('admin_selectUser_Modal_noReport')}</Text>
                             ) 
                             : 
                             (
@@ -285,13 +282,13 @@ const AdminScreen = () => {
                                         }}
                                     >
                                         <Text style={{ fontSize: 16, marginBottom: 10 }}>
-                                        {`Médicament: ${report.medicament}`}
+                                        {`${t('admin_selectUser_Message_medicament')}: ${report.medicament}`}
                                         </Text>
                                         <Text style={{ fontSize: 16, marginBottom: 10 }}>
                                         {`Message: ${report.message}`}
                                         </Text>
                                         <Text style={{ fontSize: 16, marginBottom: 10 }}>
-                                        {`Date: ${report.date}`}
+                                        {`${t('admin_selectUser_Message_Date')}: ${report.date}`}
                                         </Text>
                                     </View>
                                     ))}
@@ -303,7 +300,7 @@ const AdminScreen = () => {
                             onPress={() => setIsUserReportOpen(false)}
                             style={{ marginTop: 15,marginBottom: 0, width: 100, alignSelf: 'center' }}
                         >
-                            Fermer
+                            {t('button_close')}
                         </Button>
                     </View>
                 </Modal>
@@ -312,14 +309,14 @@ const AdminScreen = () => {
               
               <Modal visible={isGraphModalOpen} onDismiss={() => setIsGraphModalOpen(false)}>
                 <View style={{ ...styles.modalViewGraphique, padding: 0, justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 20,marginTop: 20 }}>Statistiques des signalements</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 20,marginTop: 20 }}>{t('admin_stats_title')}</Text>
                     <ChartComponent option={option}  />
                     <Button
                         mode="contained"
                         onPress={() => setIsGraphModalOpen(false)}
                         style={{ marginBottom: 20, width: 100, alignSelf: 'center' }}
                     >
-                        Fermer
+                            {t('button_close')}
                     </Button>
                 </View>
               </Modal>

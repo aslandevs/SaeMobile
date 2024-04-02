@@ -11,7 +11,8 @@ import { AuthContext } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
 import { fetchReports } from './mesreportScreen';
-
+import 'intl-pluralrules';
+import { useTranslation } from 'react-i18next';
 
 const QrCodeScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -23,7 +24,7 @@ const QrCodeScreen = () => {
   const [isReportButtonClicked, setIsReportButtonClicked] = useState(false);
   const [visible, setModalVisibility] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
-  
+  const { t } = useTranslation();
   const {email, setReport} = useContext(AuthContext);
 
   const showHelpModal = () => setModalVisibility(true);
@@ -40,10 +41,10 @@ const QrCodeScreen = () => {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.CAMERA,
         {
-          title: 'Permission d\'accès à la caméra',
-          message: 'L\'application a besoin d\'accéder à votre caméra.',
-          buttonNeutral: 'Demander plus tard',
-          buttonNegative: 'Annuler',
+          title: t('camera_permission_title'),
+          message: t('camera_permission_message'),
+          buttonNeutral: t("ask_me_later"),
+          buttonNegative: t('cancel'),
           buttonPositive: 'OK',
         },
       );
@@ -76,7 +77,7 @@ const QrCodeScreen = () => {
         return newdata[i].produit.toLowerCase();
       }
     }
-    return "Médicament inconnu";
+    return t('qrcode_inconnumedicament');
   }
 
   const handleBarCodeScanned = ({ data }) => {
@@ -86,17 +87,17 @@ const QrCodeScreen = () => {
       const name = extraireNom(cip);
       setMedicData({ cip, name });
       Alert.alert(
-        'DataMatrix Scanner',
-        `Le Code CIP est: ${cip}`+
-        `\nNom du médicament: ${name}`
+        t('qrcode_alert_title1'),
+        `${t('qrcode_alert_codecip')}: ${cip}`+
+        `\n${t('saisieCode_medicname')}: ${name}`
         ,
         [
           {
-            text: 'Report',
+            text: t('saisieCode_alert_title2'),
             onPress:showReportModal,
           },
           {
-            text: 'Annuler',
+            text: t('cancel'),
             onPress: () => setScannedData(null) && setMedicData(null),
           },
         ],
@@ -141,8 +142,8 @@ const QrCodeScreen = () => {
           setIsReportButtonClicked(false);
           hideReportModal();
           Alert.alert(
-            'Signalement',
-            'Votre signalement a été enregistré localement',
+            t('saisieCode_alert_title2'),
+            t('saisieCode_alert_message'),
             [
               {
                 text: 'OK',
@@ -166,8 +167,8 @@ const QrCodeScreen = () => {
         setIsReportButtonClicked(false);
         hideReportModal();
         Alert.alert(
-          'Signalement',
-          'Votre signalement a été envoyé avec succès',
+          t('saisieCode_alert_title2'),
+          t('saisieCode_alert_message'),
           [
             {
               text: 'OK',
@@ -180,8 +181,8 @@ const QrCodeScreen = () => {
         console.error(error);
         setIsReportButtonClicked(false);
         Alert.alert(
-          'Signalement',
-          'Erreur lors de l\'envoi du signalement',
+          t('saisieCode_alert_title2'),
+          t('saisieCode_alert_message_error'),
           [
             {
               text: 'OK',
@@ -226,7 +227,7 @@ const QrCodeScreen = () => {
               mode="contained"
               onPress={() => setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)}
             >
-              Tourner la caméra
+              {t('qrcode_switch_camera')}
             </Button>
           </View>
 
@@ -237,7 +238,7 @@ const QrCodeScreen = () => {
         <Image style={{ width: 150, height: 150 }} source={require('../assets/images/qr_code_exemple.png')} />
 
         <Button mode="contained"onPress={toggleCamera} >
-          {isCameraOpen ? "Ne plus Scanner le QR Code" : "Scanner le QR Code"}
+          {isCameraOpen ? t('qrcode_stopscan') : t('qrcode_scan')}
         </Button>
 
       </View>
@@ -245,7 +246,7 @@ const QrCodeScreen = () => {
       <View style={{ alignItems: 'center', marginBottom: 15 }}>
 
         <Button mode="contained" onPress={() => showHelpModal()} style={styles.btnHelp} >
-          Aide
+          {t('qrcode_help')}
         </Button>
 
       </View>
@@ -260,7 +261,7 @@ const QrCodeScreen = () => {
             <Text
               style={{ textAlign: 'justify', marginTop: 15, fontSize: 15 }}
             >
-              Scannez vos médicaments à l’aide de l’appareil photo pour obtenir le code CIP.
+              {t('qrcode_help_text')}
             </Text>
 
             <Button
@@ -268,7 +269,7 @@ const QrCodeScreen = () => {
               onPress={() => hideHelpModal()}
               style={[styles.btnHelp, { marginBottom: -16, marginTop: 30 }]}
             >
-              Fermer
+              {t('button_close')}
             </Button>
           </View>
         </Modal>
@@ -280,19 +281,19 @@ const QrCodeScreen = () => {
 
           <View style={styles.modalView}>
             <Text style={{ textAlign: 'center', fontSize: 20, marginBottom: 20 }}>
-              Signaler un problème
+              {t('qrcode_report_title')}
             </Text>
 
-              <TextInput label="Nom du médicament" style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
+              <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
               <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip} />
-              <TextInput label="Description du problème" style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
+              <TextInput label={t('saisieCode_problem')} style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
 
 
             <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30 }]} disabled={isReportButtonClicked}>
-              Signaler
+              {t('saisieCode_button_report')}
             </Button>
             <Button mode="contained" onPress={hideReportModal} style={[styles.btnHelp, { marginBottom: -16, marginTop: 15 , backgroundColor: "#606060"}]}>
-              Fermer
+              {t('button_close')}
             </Button>
           </View>
           </TouchableWithoutFeedback>

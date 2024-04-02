@@ -1,0 +1,95 @@
+{
+    "translation":{
+        "app_SaisieCode": "Enter the code",
+        "app_Signalement_title": "My report",
+        "app_Signalement": "Report",
+        "app_Accueil": "Home",
+        "app_Profil": "Profile",
+        "app_About": "About",
+
+
+        "password": "Password",
+        "password_confirm": "Confirm password",
+
+        "login_fillAllFields": "Please fill in all the fields",
+        "login_success": "You are now connected",
+        "login_incorrectCredentials": "Incorrect credentials",
+        "login_loginbtn": "Login",
+        "login_registerbtn": "Register",
+
+        "register_fillAllFields": "Please fill in all the fields",
+        "register_invalidEmail": "Invalid email",
+        "register_passwordLength": "Password must be at least 6 characters long",
+        "register_success": "You are now registered",
+        "register_error": "Error while creating the user",
+        "register_passwordMatch": "Passwords do not match",
+
+
+        "about_message": "Developed by",
+
+        "profile_logout": "Logout",
+        "profile_selectLanguage": "Select a language",
+        "profile_french": "French",
+        "profile_english": "English",
+
+        "admin_title": "Administrator options",
+        "admin_selectUser": "Open the user list",
+        "admin_graphique" : "Open the graph",
+        "admin_selectUser_title": "User list",
+        "admin_selectUser_default": "Select a user",
+        "admin_selectUser_search": "Search",
+
+
+        "admin_selectUser_Message_medicament": "Medication",
+        "admin_selectUser_Message_Date": "Date",
+
+
+        "admin_selectUser_Modal_title": "User reporting",
+        "admin_selectUser_Modal_noReport": "No report",
+        "button_close": "Close",
+
+        "admin_stats_title": "Reporting statistics",
+
+
+        "report_syncSuccess": "Your local data is being synchronized with the database",
+
+        "saisieCode_button_validate": "Validate",
+        "saisieCode_placeholder_cip": "Enter the CIP code of the medication",
+        "saisieCode_button_help": "Help",
+        "saisieCode_help_text": "The CIP code is a unique identifier for a medication. It is usually found on the packaging of the medication. It is composed of 13 digits.",
+        "saisieCode_medicname": "Medication name",
+        "saisieCode_problem": "Description of the problem",
+        "saisieCode_button_report": "Report",
+        "saisieCode_report_title": "Report a problem",
+        "saisieCode_error_cip": "Invalid CIP code",
+        "saisieCode_alert_title1": "Information about the medication",
+        "saisieCode_button_cancel": "Cancel",
+        "saisieCode_alert_title2": "Report",
+        "saisieCode_alert_message": "Your report has been sent",
+        "saisieCode_alert_message_error": "An error occurred while sending the report",
+
+    
+        "camera_permission_title": "Camera access permission",
+        "camera_permission_message": "The application needs access to the camera to scan the CIP code of the medication",
+        "ask_me_later": "Ask me later",
+
+  
+
+        "qrcode_inconnumedicament": "Unknown medication",
+        "qrcode_alert_title1": "Scanner DataMatrix",
+        "qrcode_alert_codecip": "The CIP Code is",
+        "qrcode_switch_camera": "Switch camera",
+        "qrcode_stopscan": "No longer scan the DataMatrix",
+        "qrcode_scan": "Scan the DataMatrix",
+        "qrcode_help": "Help",
+        "qrcode_help_text": "Scan your medications using the camera to get the CIP code",
+        "qrcode_report_title": "Report a problem",
+
+
+
+
+
+        "error": "Error",
+        "cancel": "Cancel"
+    }
+}
