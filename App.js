@@ -11,6 +11,7 @@ import aboutScreen from './screens/aboutScreen';
 import LoginScreen from './screens/loginScreen';
 import RegisterScreen from './screens/registerScreen';
 import MesReportScreen from './screens/mesreportScreen';
+import AdminScreen from './screens/adminScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -105,7 +106,7 @@ const MainTab = ({autorole, autoemail}) => {
       {role === 'admin' && (
         <Tab.Screen 
           name="Admin" 
-          component={QrCodeScreen} 
+          component={AdminScreen} 
           options={{
             tabBarLabel: 'Admin',
             tabBarIcon: ({ focused, color, size }) => (
