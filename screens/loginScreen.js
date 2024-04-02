@@ -6,6 +6,7 @@ import {getDocs, query, collection, updateDoc} from 'firebase/firestore';
 import db from '../db/firestore';
 import { AuthContext } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from "@react-native-community/netinfo";
 
 
 const LoginScreen = ({setIsLoggedIn}) => {
@@ -21,37 +22,51 @@ const LoginScreen = ({setIsLoggedIn}) => {
         return currentDate + '-' + randomString;
       };
       
-    const handleLogin = () => {
+    const handleLogin = async () => {
 
         if (!email || !password) {
             alert('Veuillez remplir tous les champs');
             return;
         }
 
-        getDocs(query(collection(db, 'user'))).then((snapshot) => {
-            snapshot.forEach((doc) => {
-                if (doc.data().email === email && doc.data().password === password) {
-                    setRole(doc.data().role);
-                    setEmail(doc.data().email);
-                    let userUuid = doc.data().uuid;
-                    if (doc.data().uuid == '' || doc.data().uuid == ""){
-                        userUuid = generateUUID();
-                        updateDoc(doc.ref, {
-                            uuid: userUuid
-                        });
+        const isConnected = await NetInfo.fetch().then(state => state.isConnected);
+        const userCredentials = await AsyncStorage.getItem('userCredentials');
+        if (!isConnected) {
+            if (userCredentials) {
+                console.log('User credentials found');
+                const { email, role } = JSON.parse(userCredentials);
+                setRole(role);
+                setEmail(email);
+                setIsLoggedIn(true);
+            }
+    
+        }else{
+            getDocs(query(collection(db, 'user'))).then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    if (doc.data().email === email && doc.data().password === password) {
+                        setRole(doc.data().role);
+                        setEmail(doc.data().email);
+                        let userUuid = doc.data().uuid;
+                        if (doc.data().uuid == '' || doc.data().uuid == ""){
+                            userUuid = generateUUID();
+                            updateDoc(doc.ref, {
+                                uuid: userUuid
+                            });
+                        }
+                        setIsLoggedIn(true);
+                        AsyncStorage.setItem('loggedInUserUuid', userUuid);
+                        AsyncStorage.setItem('userCredentials', JSON.stringify({email: doc.data().email, role: doc.data().role}));
+                        console.log('Login success');
+                    } else {
+                        console.log('Identifiants incorrects');
                     }
-                    setIsLoggedIn(true);
-                    AsyncStorage.setItem('loggedInUserUuid', userUuid);
-                    console.log('Login success');
-                } else {
-                    console.log('Identifiants incorrects');
-                }
 
-            });
-        }).catch((error) => {
-            console.log('Error getting documents: ', error);
+                });
+            }).catch((error) => {
+                console.log('Error getting documents: ', error);
+            }
+            );
         }
-        );
     };
 
 

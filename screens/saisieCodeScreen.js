@@ -5,7 +5,9 @@ import data from '../assets/json/medic.json';
 import { AuthContext } from '../context/AuthContext';
 import {addDoc, collection } from 'firebase/firestore';
 import db from '../db/firestore';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from "@react-native-community/netinfo";
+import { fetchReports } from './mesreportScreen';
 
 
 const SaisieCodeScreen = () => {
@@ -15,7 +17,7 @@ const SaisieCodeScreen = () => {
   const [isReportButtonClicked, setIsReportButtonClicked] = useState(false);
   const [medicData, setMedicData] = useState(null);
   const [message, setMessage] = useState('');
-  const {email} = useContext(AuthContext);
+  const {email, setReport} = useContext(AuthContext);
 
 
   const showHelpModal = () => setVisible(true);
@@ -96,9 +98,41 @@ const SaisieCodeScreen = () => {
   };
 
 
-  const handleReport = ({nom, cip, message }) => {
-      setIsReportButtonClicked(true);
+  const handleReport = async ({ nom, cip, message }) => {
+    //setIsReportButtonClicked(true);
 
+    const isconnected = await NetInfo.fetch().then(state => state.isConnected);
+    if (!isconnected) {
+      AsyncStorage.getItem('reports').then((localReports) => {
+          console.log('localReports', localReports);
+          if (localReports !== null) {
+            const reports = JSON.parse(localReports);
+            reports.push({ cip, medicament: nom, email, message, date: formatData(new Date()) });
+            AsyncStorage.setItem('reports', JSON.stringify(reports));
+            fetchReports({ email, setReport });
+          } else {
+            AsyncStorage.setItem('reports', JSON.stringify([{ cip, medicament: nom, email, message, date: formatData(new Date()) }]));
+            fetchReports({ email, setReport });
+          }
+          setIsReportButtonClicked(false);
+          hideReportModal();
+          setCipValue('');
+          Alert.alert(
+            'Signalement',
+            'Votre signalement a été enregistré localement',
+            [
+              {
+                text: 'OK',
+                onPress: () => console.log('OK Pressed'),
+              },
+            ],
+            { cancelable: false }
+          );
+        }
+      ).catch((error) => {
+        console.error('Error fetching reports:', error);
+      });
+    }else{
       addDoc(collection(db, 'report'), {
         cip: cip,
         medicament: nom,
@@ -135,6 +169,7 @@ const SaisieCodeScreen = () => {
           { cancelable: false }
         );
       });
+    }
   };
   return (
     <Provider>

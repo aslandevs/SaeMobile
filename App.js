@@ -14,8 +14,9 @@ import MesReportScreen from './screens/mesreportScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {getDocs, query, collection} from 'firebase/firestore';
+import {getDocs, query, collection, onSnapshot} from 'firebase/firestore';
 import db from './db/firestore';
+import NetInfo from "@react-native-community/netinfo";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -32,7 +33,7 @@ const MainTab = ({autorole, autoemail}) => {
       setEmail(autoemail);
     }
   }, [role, email]);
-  
+
   return (
     <Tab.Navigator initialRouteName="Accueil">
       <Tab.Screen 
@@ -148,17 +149,30 @@ function App() {
   useEffect(() => {
     const getUserInfoFromFirestore = async () => {
       try {
+        const isConnected = await NetInfo.fetch().then(state => state.isConnected);
+
         const userId = await AsyncStorage.getItem('loggedInUserUuid');
+        const userCredentials = await AsyncStorage.getItem('userCredentials');
         if (userId) {
-          getDocs(query(collection(db, 'user'))).then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-              if (doc.data().uuid === userId) {
-                setRole(doc.data().role);
-                setEmail(doc.data().email);
-                setIsLoggedIn(true);
-              }
+          if (!isConnected) {
+            if (userCredentials) {
+              const { email, role } = JSON.parse(userCredentials);
+              setRole(role);
+              setEmail(email);
+              setIsLoggedIn(true);
+            }        
+
+          }else{
+            getDocs(query(collection(db, 'user'))).then((querySnapshot) => {
+              querySnapshot.forEach((doc) => {
+                if (doc.data().uuid === userId) {
+                  setRole(doc.data().role);
+                  setEmail(doc.data().email);
+                  setIsLoggedIn(true);
+                }
+              });
             });
-          });
+          }
         }
       } catch (error) {
         console.error('Erreur lors de la récupération des informations de l\'utilisateur depuis Firestore :', error);
@@ -167,6 +181,15 @@ function App() {
 
     getUserInfoFromFirestore();
   }, []);
+
+  const reportsCollection = collection(db, 'reports');
+
+  const unsubscribe = onSnapshot(reportsCollection, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      const reportData = change.doc.data();
+      console.log('Changement détecté:', change.type, reportData);
+    });
+  });
   
   return (
     <AuthProvider>

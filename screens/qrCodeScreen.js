@@ -8,6 +8,10 @@ import data  from '../assets/json/medic.json';
 import {addDoc, collection } from 'firebase/firestore';
 import db from '../db/firestore';
 import { AuthContext } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from "@react-native-community/netinfo";
+import { fetchReports } from './mesreportScreen';
+
 
 const QrCodeScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -20,7 +24,7 @@ const QrCodeScreen = () => {
   const [visible, setModalVisibility] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   
-  const {email} = useContext(AuthContext);
+  const {email, setReport} = useContext(AuthContext);
 
   const showHelpModal = () => setModalVisibility(true);
   const hideHelpModal = () => setModalVisibility(false);
@@ -76,7 +80,7 @@ const QrCodeScreen = () => {
   }
 
   const handleBarCodeScanned = ({ data }) => {
-    if (data ) {
+    if (data) {
       setScannedData(data);
       const cip = extraireCIP(data);
       const name = extraireNom(cip);
@@ -118,44 +122,76 @@ const QrCodeScreen = () => {
 };
 
 
-  const handleReport = ({ nom, cip, message }) => {
-    setIsReportButtonClicked(true);
+  const handleReport = async ({ nom, cip, message }) => {
+    //setIsReportButtonClicked(true);
 
-    addDoc(collection(db, 'report'), {
-      cip: cip,
-      medicament: nom,
-      email: email,
-      message: message,
-      date: formatData(new Date()),
-    }).then(() => {
-      setIsReportButtonClicked(false);
-      hideReportModal();
-      Alert.alert(
-        'Signalement',
-        'Votre signalement a été envoyé avec succès',
-        [
-          {
-            text: 'OK',
-            onPress: () => console.log('OK Pressed'),
-          },
-        ],
-        { cancelable: false }
-      );
-    }).catch(error => {
-      console.error(error);
-      setIsReportButtonClicked(false);
-      Alert.alert(
-        'Signalement',
-        'Erreur lors de l\'envoi du signalement',
-        [
-          {
-            text: 'OK',
-            onPress: () => console.log('OK Pressed'),
-          },
-        ],
-        { cancelable: false }
-      );
-    });
+    const isconnected = await NetInfo.fetch().then(state => state.isConnected);
+    if (!isconnected) {
+      AsyncStorage.getItem('reports').then((localReports) => {
+          console.log('localReports', localReports);
+          if (localReports !== null) {
+            const reports = JSON.parse(localReports);
+            reports.push({ cip, medicament: nom, email, message, date: formatData(new Date()) });
+            AsyncStorage.setItem('reports', JSON.stringify(reports));
+            fetchReports({ email, setReport });
+          } else {
+            AsyncStorage.setItem('reports', JSON.stringify([{ cip, medicament: nom, email, message, date: formatData(new Date()) }]));
+            fetchReports({ email, setReport });
+          }
+          setIsReportButtonClicked(false);
+          hideReportModal();
+          Alert.alert(
+            'Signalement',
+            'Votre signalement a été enregistré localement',
+            [
+              {
+                text: 'OK',
+                onPress: () => console.log('OK Pressed'),
+              },
+            ],
+            { cancelable: false }
+          );
+        }
+      ).catch((error) => {
+        console.error('Error fetching reports:', error);
+      });
+    }else{
+      addDoc(collection(db, 'report'), {
+        cip: cip,
+        medicament: nom,
+        email: email,
+        message: message,
+        date: formatData(new Date()),
+      }).then(() => {
+        setIsReportButtonClicked(false);
+        hideReportModal();
+        Alert.alert(
+          'Signalement',
+          'Votre signalement a été envoyé avec succès',
+          [
+            {
+              text: 'OK',
+              onPress: () => console.log('OK Pressed'),
+            },
+          ],
+          { cancelable: false }
+        );
+      }).catch(error => {
+        console.error(error);
+        setIsReportButtonClicked(false);
+        Alert.alert(
+          'Signalement',
+          'Erreur lors de l\'envoi du signalement',
+          [
+            {
+              text: 'OK',
+              onPress: () => console.log('OK Pressed'),
+            },
+          ],
+          { cancelable: false }
+        );
+      });
+    }
   };
 
   if (hasPermission === null) {
