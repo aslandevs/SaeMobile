@@ -11,6 +11,7 @@ import { fetchReports } from './mesreportScreen';
 import 'intl-pluralrules';
 import { useTranslation } from 'react-i18next';
 import { t } from 'i18next';
+import { KeyboardAvoidingView } from 'react-native';
 
 const SaisieCodeScreen = () => {
   const [visible, setVisible] = useState(false);
@@ -44,7 +45,7 @@ const SaisieCodeScreen = () => {
 
     for (let i = 0; i < newdata.length; i++) {
       if (value == newdata[i].cip13) {
-        return newdata[i].produit.toLowerCase();
+        return newdata[i].nom_court.toLowerCase();
       }
     }
     return null;
@@ -79,7 +80,7 @@ const SaisieCodeScreen = () => {
     setMedicData({ cip: CipCode, name: medicname, detaille: medicdetaille});
     Alert.alert(
       t('saisieCode_alert_title1'),
-      ` Code CIP : `+CipCode+
+      `\n Code CIP : `+CipCode+
       `\n\n${t('saisieCode_medicname')}: `+medicname
       +`\n\n${t('qrcode_alert_detail')}:\n `+medicdetaille
       ,
@@ -256,11 +257,11 @@ const SaisieCodeScreen = () => {
               {t('saisieCode_report_title')}
             </Text>
 
-              <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
+              <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} multiline={true} numberOfLines={4} disabled={true} value={medicData?.name} />
               <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip.toString()} />
-              <Text style={{ marginTop: 240,paddingRight:110, fontSize: 13, position: 'absolute' }}> {t('qrcode_alert_detail')} :</Text>
-              <TextInput Label='' style={{ width: '100%', padding: 5, margin: 15 }} multiline={true} numberOfLines={4} disabled={true} value={medicData?.detaille} />
               <TextInput label={t('saisieCode_problem')} style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
+              <Text style={{ marginTop: 325,paddingRight:110, fontSize: 12, position: 'absolute' }}> {t('qrcode_alert_detail')} :</Text>
+              <TextInput Label='' style={{ width: '100%', padding: 5, margin: 15, marginTop: 20 }} multiline={true} numberOfLines={4} disabled={true} value={medicData?.detaille} />
 
 
             <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30, backgroundColor: "#8EC641" }]} disabled={isReportButtonClicked}>
@@ -310,6 +311,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  
 });
 
 export default SaisieCodeScreen;

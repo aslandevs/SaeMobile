@@ -65,8 +65,7 @@ const QrCodeScreen = () => {
     const newdata = data["medic"];
     for (let i = 0; i < newdata.length; i++) {
       if (value == newdata[i].cip13) {
-        console.log(newdata[i]);
-        return newdata[i].produit.toLowerCase();
+        return newdata[i].nom_court.toLowerCase();
       }
     }
     return t('qrcode_inconnumedicament');
@@ -94,7 +93,7 @@ const QrCodeScreen = () => {
       setMedicData({ cip, name, libelle_atc_2});
       Alert.alert(
         t('qrcode_alert_title1'),
-        `${t('qrcode_alert_codecip')}: ${cip}`+
+        `\n${t('qrcode_alert_codecip')}: ${cip}`+
         `\n\n${t('saisieCode_medicname')}: ${name}`+
         `\n\n${t('qrcode_alert_detail')} : \n${libelle_atc_2}`
         ,
@@ -292,11 +291,12 @@ const QrCodeScreen = () => {
               {t('qrcode_report_title')}
             </Text>
 
-              <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} disabled={true} value={medicData?.name} />
+              <TextInput label={t('saisieCode_medicname')} style={{ width: '100%', padding: 5}} multiline={true} numberOfLines={4} disabled={true} value={medicData?.name} />
               <TextInput label="Code CIP" style={{ width: '100%', padding: 5, margin: 15 }} disabled={true} value={medicData?.cip} />
-              <Text style={{ marginTop: 240,paddingRight:110, fontSize: 13, position: 'absolute' }}> {t('qrcode_alert_detail')} :</Text>
-              <TextInput Label='' style={{ width: '100%', padding: 5, margin: 15 }} multiline={true} numberOfLines={4} disabled={true} value={medicData?.libelle_atc_2} />
               <TextInput label={t('saisieCode_problem')} style={{ width: '100%', padding: 5 }} multiline={true} numberOfLines={4} onChangeText={setMessage} />
+
+              <Text style={{ marginTop: 325, paddingRight:110, fontSize: 12, position: 'absolute' }}> {t('qrcode_alert_detail')} :</Text>
+              <TextInput Label='' style={{ width: '100%', padding: 5, margin: 15, marginTop: 20 }} multiline={true} numberOfLines={4} disabled={true} value={medicData?.libelle_atc_2} />
 
 
             <Button mode="contained" onPress={() => handleReport({ nom: medicData?.name, cip: medicData?.cip, message })} style={[styles.btnHelp, { marginBottom: 0, marginTop: 30, backgroundColor: "#8EC641" }]} disabled={isReportButtonClicked}>
